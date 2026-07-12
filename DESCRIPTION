@@ -16,6 +16,7 @@ Depends:
     R (>= 4.1)
 Imports:
     cli,
+    processx,
     R6,
     rlang
 Suggests:

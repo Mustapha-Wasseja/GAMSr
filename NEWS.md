@@ -11,3 +11,6 @@
 - Added expected `.gms` fixtures for scalar LP and transportation examples.
 - Added the initial GDX transfer adapter boundary with canonical transfer
   symbols, a mock adapter, and optional GAMS Transfer R routing.
+- Added real input GDX write/read tests when `gamstransfer` is installed.
+- Added safe `solve()` execution scaffolding, result-GDX import, status helpers,
+  objective values, variable records, and equation records.

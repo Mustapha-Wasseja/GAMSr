@@ -27,6 +27,14 @@ reference:
       - gams_transfer_available
       - gamstransfer_adapter
       - mock_transfer_adapter
+      - read_solution_gdx
+  - title: Solve Results
+    contents:
+      - solve.gams_problem
+      - model_status
+      - objective_value
+      - variable_values
+      - equation_values
   - title: Variable Attributes
     contents:
       - set_lower_bound

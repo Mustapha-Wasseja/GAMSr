@@ -37,13 +37,19 @@ Last updated: 2026-07-11.
 - `gamstransfer_adapter()`, `mock_transfer_adapter()`, and `write_input_gdx()`
   as the initial transfer adapter boundary.
 - Optional `gamstransfer` detection through `gams_transfer_available()`.
+- Real input GDX writing through GAMS Transfer R when `gamstransfer` is
+  installed.
+- Safe `solve()` method for `gams_problem` objects using `processx` argument
+  vectors, no shell command construction.
+- Result GDX reading through `read_solution_gdx()`.
+- Result accessors: `model_status()`, `solver_status()`, `objective_value()`,
+  `variable_values()`, and `equation_values()`.
 - GAMS executable discovery helpers.
 
 ## Not Yet Implemented
 
-- GDX read/write integration tests against an installed GAMS Transfer R setup.
-- Result GDX reading.
-- GAMS process execution.
+- End-to-end GAMS solve integration tests on this machine, because no local
+  GAMS executable is available.
 - Solver options and option files.
 - Full GAMS syntax validation by a local GAMS executable.
 - Result objects.

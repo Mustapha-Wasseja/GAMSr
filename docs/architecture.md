@@ -11,7 +11,9 @@
    compile-only workflows.
 5. Transfer layer: adapter boundary over optional GAMS Transfer R plus a mock
    adapter for tests.
-6. Execution layer: planned safe process invocation and result parsing.
+6. Execution layer: safe process invocation, result-GDX reading, and result
+   accessors.
 
-The current repository implements layers 1 through 4 for inline-data
-compile-only workflows and the first boundary of layer 5.
+The current repository implements layers 1 through 6 for inline-data
+compile-only workflows, optional GDX input writing, and solve/result APIs.
+End-to-end solve tests still require a GAMS-enabled machine.

@@ -23,9 +23,13 @@ This repository is in early active development. The package currently provides:
 - `write_gams()` and `compile_gams()` for durable compile-only files;
 - a starter transfer adapter layer for canonical input data and optional GDX
   writing through GAMS Transfer R;
+- safe local `solve()` execution with result-GDX reading when GAMS is installed;
+- result helpers: `model_status()`, `solver_status()`, `objective_value()`,
+  `variable_values()`, and `equation_values()`;
 - compile-only architecture notes and ADRs.
 
-It does not yet implement process execution or solved-result import.
+It does not yet include broad GAMS integration coverage because that requires a
+machine with GAMS installed and licensed.
 
 ## Example
 
@@ -92,6 +96,23 @@ gams_transfer_available()
 Actual GDX writing requires the optional `gamstransfer` package and a compatible
 GAMS setup. Tests use `mock_transfer_adapter()` so core checks stay independent
 of GAMS.
+
+## Solving Status
+
+When GAMS and `gamstransfer` are available, `solve()` runs GAMS without invoking
+a shell and reads status, objective, variable, and equation records back into R:
+
+```r
+result <- solve(problem)
+model_status(result)
+solver_status(result)
+objective_value(result)
+variable_values(result, x)
+equation_values(result, supply)
+```
+
+On machines without GAMS, `solve()` fails early with a clear error while
+compile-only workflows continue to work.
 
 ## GAMS Availability
 

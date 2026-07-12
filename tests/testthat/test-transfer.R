@@ -44,3 +44,19 @@ test_that("gamstransfer adapter fails clearly when dependency is unavailable", {
     class = "gamsr_error_missing_dependency"
   )
 })
+
+test_that("gamstransfer adapter writes an actual GDX when available", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+
+  path <- file.path(withr::local_tempdir(), "input.gdx")
+  result <- write_input_gdx(transport_problem(), path)
+
+  expect_true(file.exists(path))
+  expect_true(result$written)
+  expect_identical(result$adapter, "gamstransfer")
+
+  Container <- getExportedValue("gamstransfer", "Container")
+  container <- Container$new(path)
+  expect_identical(as.character(container["i"]$records$uni), c("seattle", "san-diego"))
+  expect_equal(nrow(container["c"]$records), 6)
+})
