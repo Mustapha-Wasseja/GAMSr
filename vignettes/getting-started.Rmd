@@ -1,0 +1,18 @@
+---
+title: "Getting Started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, eval = FALSE}
+library(GAMSr)
+
+m <- gams_model("transport")
+i <- gams_set(m, "i", records = c("seattle", "san-diego"))
+j <- gams_set(m, "j", records = c("new-york", "chicago", "topeka"))
+x <- gams_variable(m, "x", domain = c(i, j), type = "positive")
+m
+```

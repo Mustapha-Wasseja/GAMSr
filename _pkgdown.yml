@@ -1,0 +1,22 @@
+url: https://mustapha-wasseja.github.io/GAMSr/
+template:
+  bootstrap: 5
+reference:
+  - title: Model Construction
+    contents:
+      - gams_model
+      - gams_set
+      - gams_parameter
+      - gams_variable
+      - gams_equation
+  - title: Variable Attributes
+    contents:
+      - set_lower_bound
+      - set_upper_bound
+      - set_level
+      - set_fixed
+  - title: GAMS Discovery
+    contents:
+      - find_gams
+      - gams_available
+      - gams_version

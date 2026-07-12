@@ -1,0 +1,36 @@
+Package: GAMSr
+Title: R-Native Modelling Interface for GAMS
+Version: 0.0.1
+Authors@R: 
+    person("Mustapha", "Wasseja", role = c("aut", "cre"),
+           email = "mmohammed@method-vm.co.uk")
+Author: Mustapha Wasseja [aut, cre]
+Maintainer: Mustapha Wasseja <mmohammed@method-vm.co.uk>
+Description: Provides an experimental R-native interface for constructing,
+    validating, and compiling algebraic optimisation models intended for
+    execution by a separately installed GAMS system. The package is an
+    independent community project and is not affiliated with or endorsed by
+    GAMS Development Corporation.
+License: MIT + file LICENSE
+Depends:
+    R (>= 4.1)
+Imports:
+    cli,
+    R6,
+    rlang
+Suggests:
+    covr,
+    knitr,
+    lintr,
+    pkgdown,
+    rmarkdown,
+    roxygen2,
+    testthat (>= 3.0.0),
+    tibble,
+    withr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+NeedsCompilation: no

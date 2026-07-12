@@ -1,0 +1,17 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.httr-oauth
+.DS_Store
+*.Rcheck/
+*.tar.gz
+*.gdx
+*.lst
+*.log
+*.pf
+*.ref
+*.g00
+225*/
+tmp/
+temp/
