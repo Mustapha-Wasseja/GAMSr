@@ -7,3 +7,7 @@
   relationships, `gams_sum()`, math helpers, and equation definition storage.
 - Added the first compiler layer with `gams_problem()`, `model_ir()`, and
   `generated_gams()` for deterministic compile-only `.gms` output.
+- Added `write_gams()` and `compile_gams()` file-output helpers.
+- Added expected `.gms` fixtures for scalar LP and transportation examples.
+- Added the initial GDX transfer adapter boundary with canonical transfer
+  symbols, a mock adapter, and optional GAMS Transfer R routing.

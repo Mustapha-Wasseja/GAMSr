@@ -9,8 +9,9 @@
    math functions, and summation.
 4. Compiler layer: normalized IR and deterministic full-model GAMS renderer for
    compile-only workflows.
-5. Transfer layer: planned adapter over optional GAMS Transfer R.
+5. Transfer layer: adapter boundary over optional GAMS Transfer R plus a mock
+   adapter for tests.
 6. Execution layer: planned safe process invocation and result parsing.
 
 The current repository implements layers 1 through 4 for inline-data
-compile-only workflows.
+compile-only workflows and the first boundary of layer 5.

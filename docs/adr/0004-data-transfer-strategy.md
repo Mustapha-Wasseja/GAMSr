@@ -31,3 +31,11 @@ scratch is unnecessary and risky.
 
 Mock adapter tests will validate canonical records. Integration tests will be
 skipped clearly when GAMS or `gamstransfer` is unavailable.
+
+## Implementation Note
+
+The first transfer slice adds `transfer_symbols()`, `gamstransfer_adapter()`,
+`mock_transfer_adapter()`, `gams_transfer_available()`, and
+`write_input_gdx()`. The mock adapter intentionally does not create GDX files;
+it records the intended write for tests. Real GDX writing is routed through
+optional GAMS Transfer R and fails clearly when `gamstransfer` is unavailable.

@@ -27,14 +27,22 @@ Last updated: 2026-07-11.
 - `gams_problem()` for binding equations, objective, sense, and model type.
 - `model_ir()` for normalized compiler inspection.
 - `generated_gams()` for deterministic compile-only `.gms` source.
+- `write_gams()` for writing generated source to a chosen file.
+- `compile_gams()` for writing compile-only `.gms` files and returning a
+  `gams_compilation` object.
 - Inline rendering for sets, scalar/one-dimensional/multidimensional
   parameters, variables, equations, objective equations, model declarations, and
   solve statements.
+- `transfer_symbols()` for canonical input set/parameter extraction.
+- `gamstransfer_adapter()`, `mock_transfer_adapter()`, and `write_input_gdx()`
+  as the initial transfer adapter boundary.
+- Optional `gamstransfer` detection through `gams_transfer_available()`.
 - GAMS executable discovery helpers.
 
 ## Not Yet Implemented
 
-- GDX read/write.
+- GDX read/write integration tests against an installed GAMS Transfer R setup.
+- Result GDX reading.
 - GAMS process execution.
 - Solver options and option files.
 - Full GAMS syntax validation by a local GAMS executable.

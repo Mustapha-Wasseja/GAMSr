@@ -63,6 +63,12 @@ points to GAMS Transfer R. `gamstransfer` is on CRAN as version 3.0.8, published
 C++17 system requirement. It should remain optional for `GAMSr` until the data
 transfer adapter is implemented.
 
+The GAMS Transfer R documentation describes `Container` as analogous to a GDX
+file. Symbols are linked to a container, records can be supplied through
+constructors or `setRecords()`, and a container can write all data to GDX with
+its `write()` method. Public examples show `m <- Container$new()` followed by
+symbol construction and `m$write("out.gdx")`.
+
 ### GAMSPy lessons
 
 GAMSPy emphasizes set-based symbolic algebra, mathematical-model generation

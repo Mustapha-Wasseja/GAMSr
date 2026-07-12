@@ -20,9 +20,12 @@ This repository is in early active development. The package currently provides:
 - deterministic expression formatting for compile-only inspection;
 - `gams_problem()`, `model_ir()`, and `generated_gams()` for compile-only
   GAMS source generation;
+- `write_gams()` and `compile_gams()` for durable compile-only files;
+- a starter transfer adapter layer for canonical input data and optional GDX
+  writing through GAMS Transfer R;
 - compile-only architecture notes and ADRs.
 
-It does not yet implement GDX transfer or process execution.
+It does not yet implement process execution or solved-result import.
 
 ## Example
 
@@ -70,8 +73,25 @@ problem <- gams_problem(
 
 cat(generated_gams(problem))
 
+compile <- compile_gams(problem, directory = tempdir())
+compile$source_file
+
 m
 ```
+
+## GDX Transfer Status
+
+`GAMSr` can now extract canonical input symbols and has an adapter boundary for
+GAMS Transfer R:
+
+```r
+transfer_symbols(problem)
+gams_transfer_available()
+```
+
+Actual GDX writing requires the optional `gamstransfer` package and a compatible
+GAMS setup. Tests use `mock_transfer_adapter()` so core checks stay independent
+of GAMS.
 
 ## GAMS Availability
 

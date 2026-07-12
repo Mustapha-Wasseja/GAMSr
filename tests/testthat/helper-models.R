@@ -1,0 +1,73 @@
+expected_gams_fixture <- function(name) {
+  path <- testthat::test_path("..", "fixtures", "expected-gams", name)
+  paste(readLines(path, warn = FALSE), collapse = "\n")
+}
+
+scalar_lp_problem <- function() {
+  model <- gams_model("scalar_lp")
+  x <- gams_variable(model, "x", type = "free")
+  e <- gams_equation(model, "balance")
+  e[] <- x >= 1
+
+  gams_problem(
+    model,
+    name = "scalar_lp_problem",
+    equations = e,
+    objective = x,
+    sense = "min",
+    problem = "LP"
+  )
+}
+
+transport_problem <- function() {
+  model <- gams_model("transport")
+  i <- gams_set(
+    model,
+    "i",
+    records = c("seattle", "san-diego"),
+    description = "canning plants"
+  )
+  j <- gams_set(
+    model,
+    "j",
+    records = c("new-york", "chicago", "topeka"),
+    description = "markets"
+  )
+  a <- gams_parameter(
+    model,
+    "a",
+    domain = i,
+    records = c(seattle = 350, `san-diego` = 600)
+  )
+  b <- gams_parameter(
+    model,
+    "b",
+    domain = j,
+    records = c(`new-york` = 325, chicago = 300, topeka = 275)
+  )
+  c <- gams_parameter(
+    model,
+    "c",
+    domain = c(i, j),
+    records = data.frame(
+      i = c("seattle", "seattle", "seattle", "san-diego", "san-diego", "san-diego"),
+      j = c("new-york", "chicago", "topeka", "new-york", "chicago", "topeka"),
+      value = c(0.225, 0.153, 0.162, 0.225, 0.162, 0.126)
+    )
+  )
+  x <- gams_variable(model, "x", domain = c(i, j), type = "positive")
+  supply <- gams_equation(model, "supply", domain = i)
+  demand <- gams_equation(model, "demand", domain = j)
+
+  supply[i] <- gams_sum(j, x[i, j]) <= a[i]
+  demand[j] <- gams_sum(i, x[i, j]) >= b[j]
+
+  gams_problem(
+    model,
+    name = "transport_problem",
+    equations = c(supply, demand),
+    objective = gams_sum(c(i, j), c[i, j] * x[i, j]),
+    sense = "min",
+    problem = "LP"
+  )
+}

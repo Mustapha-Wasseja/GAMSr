@@ -14,10 +14,19 @@ reference:
     contents:
       - model_ir
       - generated_gams
+      - write_gams
+      - compile_gams
       - format_gams_expression
       - gams_sum
       - gams_eq
       - gams_math
+  - title: Data Transfer
+    contents:
+      - transfer_symbols
+      - write_input_gdx
+      - gams_transfer_available
+      - gamstransfer_adapter
+      - mock_transfer_adapter
   - title: Variable Attributes
     contents:
       - set_lower_bound
