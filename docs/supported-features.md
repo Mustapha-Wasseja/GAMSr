@@ -16,13 +16,18 @@ Last updated: 2026-07-11.
   `integer` declarations.
 - Variable attribute record setters for lower, upper, level, and fixed values.
 - `gams_equation()` declaration.
+- Symbolic indexing with `[]` for sets and literal labels.
+- Symbolic arithmetic with `+`, `-`, `*`, `/`, `^`, and unary minus.
+- Symbolic relationships with `<=`, `>=`, `==`, and `gams_eq()`.
+- `gams_sum()` over one or more sets.
+- Symbolic math helpers: `gams_abs()`, `gams_exp()`, `gams_log()`,
+  `gams_log10()`, `gams_sqrt()`, `gams_min()`, and `gams_max()`.
+- Equation definition assignment with free-index validation.
+- `format_gams_expression()` for deterministic expression inspection.
 - GAMS executable discovery helpers.
 
 ## Not Yet Implemented
 
-- Symbolic expression AST.
-- Indexed equation assignment.
-- `gams_sum()` and equation relationships.
 - Compiler IR and GAMS source generation.
 - GDX read/write.
 - GAMS process execution.

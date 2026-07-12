@@ -63,13 +63,24 @@ test_that("variables support immutable attribute setters", {
   expect_identical(x2$gams_attributes$upper$value, c(500, 700))
 })
 
-test_that("equation replacement fails clearly until the AST layer exists", {
+test_that("equations store symbolic definitions", {
   model <- gams_model("transport")
-  i <- gams_set(model, "i")
+  i <- gams_set(model, "i", records = c("seattle", "san-diego"))
+  capacity <- gams_parameter(
+    model,
+    "capacity",
+    domain = i,
+    records = c(seattle = 1, `san-diego` = 2)
+  )
+  x <- gams_variable(model, "x", domain = i, type = "positive")
   e <- gams_equation(model, "supply", domain = i)
 
-  expect_error(
-    e[i] <- 1,
-    class = "gamsr_error_not_implemented"
+  e[i] <- x[i] <= capacity[i]
+
+  expect_s3_class(e$definition$expression, "gams_expr_comparison")
+  expect_identical(
+    format_gams_expression(e$definition$expression),
+    "x(i) =l= capacity(i)"
   )
+  expect_identical(model$get_symbol("supply")$definition$expression, e$definition$expression)
 })

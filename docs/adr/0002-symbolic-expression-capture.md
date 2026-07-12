@@ -30,3 +30,11 @@ String parsing is rejected for security and diagnostics.
 
 Expression-node tests will verify AST construction, dimension inference, scope
 validation, equality handling, and prevention of accidental logical comparison.
+
+## Implementation Note
+
+The first expression slice implements S3 AST nodes for constants, symbol
+references, indexed references, binary operations, unary operations,
+comparisons, sums, and math functions. Indexed equation assignment now stores
+symbolic definitions and validates that any free index is either in the equation
+domain or bound by `gams_sum()`.

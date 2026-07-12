@@ -209,6 +209,21 @@ new_name_registry <- function(kind = "name") {
     get(key, envir = items, inherits = FALSE)$value
   }
 
+  replace_value <- function(name, value, call = rlang::caller_env()) {
+    key <- gams_identifier_key(name)
+    if (!exists(key, envir = items, inherits = FALSE)) {
+      gamsr_abort(
+        sprintf("No %s named `%s` exists.", kind, name),
+        class = "gamsr_error_unknown_name",
+        call = call
+      )
+    }
+
+    existing <- get(key, envir = items, inherits = FALSE)
+    assign(key, list(name = existing$name, value = value), envir = items)
+    invisible(value)
+  }
+
   names_value <- function() {
     vapply(order, function(key) {
       get(key, envir = items, inherits = FALSE)$name
@@ -230,6 +245,7 @@ new_name_registry <- function(kind = "name") {
       add = add,
       exists = has,
       get = get_value,
+      replace = replace_value,
       names = names_value,
       values = values
     ),

@@ -46,6 +46,17 @@ GamsModel <- R6::R6Class(
       private$symbol_registry$get(name)
     },
 
+    update_symbol = function(symbol) {
+      if (!inherits(symbol, "gams_symbol")) {
+        gamsr_abort(
+          "`symbol` must be a GAMSr symbol object.",
+          class = "gamsr_error_invalid_symbol"
+        )
+      }
+      private$symbol_registry$replace(symbol$name, symbol)
+      invisible(symbol)
+    },
+
     symbols = function() {
       private$symbol_registry$values()
     },

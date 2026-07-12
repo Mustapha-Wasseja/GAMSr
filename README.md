@@ -10,16 +10,18 @@ GAMS is a separate product and may require its own installation and licence.
 
 ## Status
 
-This repository is in Milestone 0/1. The package currently provides:
+This repository is in early active development. The package currently provides:
 
 - validated GAMS-compatible names and labels;
 - an ordered model symbol registry;
 - immutable S3 symbol objects for sets, parameters, variables, and equations;
 - canonical records for basic set and parameter inputs;
+- symbolic indexing, arithmetic, equation relationships, and `gams_sum()`;
+- deterministic expression formatting for compile-only inspection;
 - compile-only architecture notes and ADRs.
 
-It does not yet implement symbolic algebra, GAMS code generation, GDX transfer,
-or process execution.
+It does not yet implement full GAMS code generation, GDX transfer, or process
+execution.
 
 ## Example
 
@@ -51,6 +53,11 @@ a <- gams_parameter(
 
 x <- gams_variable(m, "x", domain = c(i, j), type = "positive")
 supply <- gams_equation(m, "supply", domain = i)
+
+supply[i] <- gams_sum(j, x[i, j]) <= a[i]
+
+format_gams_expression(supply$definition$expression)
+#> sum(j, x(i,j)) =l= a(i)
 
 m
 ```
