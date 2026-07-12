@@ -9,6 +9,15 @@ reference:
       - gams_parameter
       - gams_variable
       - gams_equation
+      - gams_problem
+  - title: Compilation
+    contents:
+      - model_ir
+      - generated_gams
+      - format_gams_expression
+      - gams_sum
+      - gams_eq
+      - gams_math
   - title: Variable Attributes
     contents:
       - set_lower_bound

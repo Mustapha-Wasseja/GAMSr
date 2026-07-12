@@ -18,10 +18,11 @@ This repository is in early active development. The package currently provides:
 - canonical records for basic set and parameter inputs;
 - symbolic indexing, arithmetic, equation relationships, and `gams_sum()`;
 - deterministic expression formatting for compile-only inspection;
+- `gams_problem()`, `model_ir()`, and `generated_gams()` for compile-only
+  GAMS source generation;
 - compile-only architecture notes and ADRs.
 
-It does not yet implement full GAMS code generation, GDX transfer, or process
-execution.
+It does not yet implement GDX transfer or process execution.
 
 ## Example
 
@@ -58,6 +59,16 @@ supply[i] <- gams_sum(j, x[i, j]) <= a[i]
 
 format_gams_expression(supply$definition$expression)
 #> sum(j, x(i,j)) =l= a(i)
+
+problem <- gams_problem(
+  m,
+  equations = supply,
+  objective = gams_sum(c(i, j), x[i, j]),
+  sense = "min",
+  problem = "LP"
+)
+
+cat(generated_gams(problem))
 
 m
 ```

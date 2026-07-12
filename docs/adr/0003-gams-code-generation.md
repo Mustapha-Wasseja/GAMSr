@@ -28,3 +28,11 @@ Templates alone are insufficient without a validated IR.
 
 Golden-file tests will compare generated `.gms` output for scalar LP,
 transportation, diet, and MIP examples. Snapshot tests will avoid unstable paths.
+
+## Implementation Note
+
+The first compiler slice introduces `gams_problem()`, `model_ir()`, and
+`generated_gams()`. It renders deterministic inline-data GAMS source for scalar
+LP and transportation-style models, including an automatically generated scalar
+objective variable and objective equation. GDX transfer and process execution
+remain separate later layers.

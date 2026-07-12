@@ -24,12 +24,19 @@ Last updated: 2026-07-11.
   `gams_log10()`, `gams_sqrt()`, `gams_min()`, and `gams_max()`.
 - Equation definition assignment with free-index validation.
 - `format_gams_expression()` for deterministic expression inspection.
+- `gams_problem()` for binding equations, objective, sense, and model type.
+- `model_ir()` for normalized compiler inspection.
+- `generated_gams()` for deterministic compile-only `.gms` source.
+- Inline rendering for sets, scalar/one-dimensional/multidimensional
+  parameters, variables, equations, objective equations, model declarations, and
+  solve statements.
 - GAMS executable discovery helpers.
 
 ## Not Yet Implemented
 
-- Compiler IR and GAMS source generation.
 - GDX read/write.
 - GAMS process execution.
+- Solver options and option files.
+- Full GAMS syntax validation by a local GAMS executable.
 - Result objects.
 - Integration tests against a real GAMS installation.

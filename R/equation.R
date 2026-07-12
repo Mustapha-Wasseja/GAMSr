@@ -21,7 +21,10 @@ gams_equation <- function(model, name, domain = NULL, description = NULL) {
 
 #' @export
 `[<-.gams_equation` <- function(x, ..., value) {
-  indices <- normalize_equation_indices(x, list(...))
+  indices <- normalize_equation_indices(
+    x,
+    rlang::dots_list(..., .ignore_empty = "all")
+  )
   expression <- as_gams_expr(value)
 
   if (!inherits(expression, "gams_expr_comparison")) {
