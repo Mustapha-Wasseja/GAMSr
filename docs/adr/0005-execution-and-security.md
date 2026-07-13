@@ -36,6 +36,7 @@ string construction.
 
 `solve.gams_problem()` now checks for `gamstransfer` and a local GAMS
 executable, writes a solve-specific `.gms` file, invokes GAMS through
-`processx::run()` without a shell, and imports result records from GDX. On this
-development machine GAMS is not installed, so tests verify clear unavailable-GAMS
-errors and fake-result GDX parsing.
+`processx::run()` without a shell, and imports result records from GDX. Gated
+integration tests run scalar and transportation LP fixtures when GAMS is
+available; dependency-free tests still verify clear unavailable-GAMS errors and
+fake-result GDX parsing.

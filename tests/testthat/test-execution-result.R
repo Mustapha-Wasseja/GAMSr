@@ -130,6 +130,76 @@ test_that("solve fails clearly when GAMS is unavailable", {
   )
 })
 
+test_that("solve builds safe GAMS command arguments", {
+  args <- GAMSr:::solve_command_args(
+    scalar_lp_problem(),
+    source_file = "scalar_lp_problem-solve.gms",
+    solver = "soplex",
+    gams_options = list(reslim = 60, threads = 2, optcr = 0.01, profile = TRUE)
+  )
+
+  expect_identical(
+    args,
+    c(
+      "scalar_lp_problem-solve.gms",
+      "lo=2",
+      "lp=soplex",
+      "reslim=60",
+      "threads=2",
+      "optcr=0.01",
+      "profile=1"
+    )
+  )
+  expect_error(
+    GAMSr:::solve_command_args(scalar_lp_problem(), "model.gms", solver = "bad-name"),
+    class = "gamsr_error_invalid_option"
+  )
+  expect_error(
+    GAMSr:::solve_command_args(
+      scalar_lp_problem(),
+      "model.gms",
+      gams_options = list(`bad-name` = 1)
+    ),
+    class = "gamsr_error_invalid_option"
+  )
+  expect_error(
+    GAMSr:::solve_command_args(
+      scalar_lp_problem(),
+      "model.gms",
+      gams_options = list(reslim = c(1, 2))
+    ),
+    class = "gamsr_error_invalid_option"
+  )
+})
+
+test_that("solve runs a scalar LP with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(scalar_lp_problem(), keep = TRUE, gams_options = list(limrow = 0, limcol = 0))
+
+  expect_s3_class(result, "gams_result")
+  expect_identical(model_status(result)$code, 1L)
+  expect_identical(solver_status(result)$code, 1L)
+  expect_equal(objective_value(result), 1)
+  expect_true(file.exists(result$result_file))
+  expect_equal(variable_values(result, "x")$level[[1L]], 1)
+})
+
+test_that("solve runs the transportation LP with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(transport_problem(), gams_options = list(limrow = 0, limcol = 0))
+  x <- variable_values(result, "x")
+
+  expect_identical(model_status(result)$label, "OptimalGlobal")
+  expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(objective_value(result), 153.675)
+  expect_equal(nrow(x), 6)
+  expect_equal(sum(x$level), 900)
+})
+
 test_that("execution source appends result unload statements", {
   problem <- scalar_lp_problem()
   source <- GAMSr:::append_result_unload(generated_gams(problem), model_ir(problem), "results.gdx")

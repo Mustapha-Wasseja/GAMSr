@@ -6,19 +6,22 @@
 #' @export
 find_gams <- function(system_directory = NULL) {
   if (!is.null(system_directory)) {
-    exe <- file.path(system_directory, if (.Platform$OS.type == "windows") "gams.exe" else "gams")
-    if (file.exists(exe)) {
-      return(normalizePath(exe, winslash = "/", mustWork = TRUE))
-    }
-    return(NA_character_)
+    return(normalize_gams_executable(file.path(system_directory, gams_executable_name())))
   }
 
   path <- Sys.which("gams")
   if (nzchar(path)) {
-    normalizePath(path, winslash = "/", mustWork = TRUE)
-  } else {
-    NA_character_
+    return(normalize_gams_executable(path))
   }
+
+  for (candidate in common_gams_candidates()) {
+    normalized <- normalize_gams_executable(candidate)
+    if (!is.na(normalized)) {
+      return(normalized)
+    }
+  }
+
+  NA_character_
 }
 
 #' Check whether GAMS is available
@@ -43,9 +46,49 @@ gams_version <- function(system_directory = NULL) {
     return(NA_character_)
   }
 
-  out <- tryCatch(
-    system2(exe, args = "--version", stdout = TRUE, stderr = TRUE),
+  process <- tryCatch(
+    processx::run(exe, args = "?", timeout = 15, error_on_status = FALSE),
     error = function(err) NA_character_
   )
-  paste(out, collapse = "\n")
+  if (is.character(process)) {
+    return(process)
+  }
+
+  paste(c(process$stdout, process$stderr), collapse = "\n")
+}
+
+gams_executable_name <- function() {
+  if (.Platform$OS.type == "windows") "gams.exe" else "gams"
+}
+
+normalize_gams_executable <- function(path) {
+  if (!is_string(path) || !file.exists(path)) {
+    return(NA_character_)
+  }
+
+  normalizePath(path, winslash = "/", mustWork = TRUE)
+}
+
+common_gams_candidates <- function() {
+  candidates <- character()
+  env_dirs <- Sys.getenv(c("GAMS_SYSDIR", "GAMSDIR", "GAMS_HOME"), unset = NA_character_)
+  env_dirs <- env_dirs[!is.na(env_dirs) & nzchar(env_dirs)]
+  candidates <- c(candidates, file.path(env_dirs, gams_executable_name()))
+
+  if (.Platform$OS.type == "windows") {
+    roots <- unique(c(
+      Sys.getenv("GAMS_ROOT", unset = NA_character_),
+      "C:/GAMS"
+    ))
+    roots <- roots[!is.na(roots) & nzchar(roots) & dir.exists(roots)]
+    for (root in roots) {
+      version_dirs <- list.dirs(root, full.names = TRUE, recursive = FALSE)
+      candidates <- c(
+        candidates,
+        file.path(rev(sort(version_dirs)), gams_executable_name())
+      )
+    }
+  }
+
+  unique(candidates)
 }

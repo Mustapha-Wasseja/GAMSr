@@ -1,6 +1,6 @@
 # Supported Features
 
-Last updated: 2026-07-11.
+Last updated: 2026-07-13.
 
 ## Implemented
 
@@ -41,16 +41,21 @@ Last updated: 2026-07-11.
   installed.
 - Safe `solve()` method for `gams_problem` objects using `processx` argument
   vectors, no shell command construction.
+- Optional solver selection and scalar GAMS command-line options in `solve()`.
 - Result GDX reading through `read_solution_gdx()`.
 - Result accessors: `model_status()`, `solver_status()`, `objective_value()`,
   `variable_values()`, and `equation_values()`.
-- GAMS executable discovery helpers.
+- GAMS executable discovery helpers, including common Windows install
+  locations.
+- Gated end-to-end solve tests against a local GAMS installation.
 
 ## Not Yet Implemented
 
-- End-to-end GAMS solve integration tests on this machine, because no local
-  GAMS executable is available.
-- Solver options and option files.
-- Full GAMS syntax validation by a local GAMS executable.
-- Result objects.
-- Integration tests against a real GAMS installation.
+- Solver option files.
+- Broad full-model GAMS syntax validation across problem classes.
+- Richer result metadata, including listing/log summaries, solve time,
+  iteration counts, resource usage, infeasibility summaries, and solver-specific
+  details.
+- GDX-backed model execution that loads input data from GDX instead of rendering
+  all records inline.
+- Remote execution through GAMS Engine or other hosted solve backends.

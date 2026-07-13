@@ -10,6 +10,8 @@
   ...,
   work_dir = NULL,
   system_directory = NULL,
+  solver = NULL,
+  gams_options = list(),
   keep = FALSE,
   timeout = Inf,
   echo = FALSE
@@ -26,6 +28,12 @@
 created.}
 
 \item{system_directory}{Optional GAMS system directory.}
+
+\item{solver}{Optional solver name. When supplied, GAMSr passes a safe GAMS
+command-line solver override for the problem type, such as \code{lp=soplex}.}
+
+\item{gams_options}{Named list of additional scalar GAMS command-line
+options, such as \code{list(reslim = 60, optcr = 0.01)}.}
 
 \item{keep}{Whether to retain work files after reading results.}
 

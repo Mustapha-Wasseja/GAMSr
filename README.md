@@ -24,12 +24,13 @@ This repository is in early active development. The package currently provides:
 - a starter transfer adapter layer for canonical input data and optional GDX
   writing through GAMS Transfer R;
 - safe local `solve()` execution with result-GDX reading when GAMS is installed;
+- optional solver selection and scalar GAMS command-line options in `solve()`;
 - result helpers: `model_status()`, `solver_status()`, `objective_value()`,
   `variable_values()`, and `equation_values()`;
 - compile-only architecture notes and ADRs.
 
-It does not yet include broad GAMS integration coverage because that requires a
-machine with GAMS installed and licensed.
+It includes gated local GAMS integration tests, but broad solver and model-class
+coverage is still under development.
 
 ## Example
 
@@ -109,6 +110,12 @@ solver_status(result)
 objective_value(result)
 variable_values(result, x)
 equation_values(result, supply)
+
+result <- solve(
+  problem,
+  solver = "soplex",
+  gams_options = list(reslim = 60, optcr = 0.01)
+)
 ```
 
 On machines without GAMS, `solve()` fails early with a clear error while
@@ -116,12 +123,13 @@ compile-only workflows continue to work.
 
 ## GAMS Availability
 
-The package must install and load without GAMS. Runtime execution will be added
-later and will require a local GAMS installation.
+The package must install and load without GAMS. Runtime execution requires a
+local GAMS installation and the optional `gamstransfer` package.
 
 ```r
 gams_available()
 find_gams()
+gams_version()
 ```
 
 ## Naming Note

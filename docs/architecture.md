@@ -16,4 +16,5 @@
 
 The current repository implements layers 1 through 6 for inline-data
 compile-only workflows, optional GDX input writing, and solve/result APIs.
-End-to-end solve tests still require a GAMS-enabled machine.
+When GAMS is installed, gated integration tests solve scalar and transportation
+LP fixtures and read the resulting GDX records back into R.

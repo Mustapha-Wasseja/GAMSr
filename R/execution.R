@@ -9,6 +9,10 @@
 #' @param work_dir Optional work directory. When `NULL`, a temporary directory is
 #'   created.
 #' @param system_directory Optional GAMS system directory.
+#' @param solver Optional solver name. When supplied, GAMSr passes a safe GAMS
+#'   command-line solver override for the problem type, such as `lp=soplex`.
+#' @param gams_options Named list of additional scalar GAMS command-line
+#'   options, such as `list(reslim = 60, optcr = 0.01)`.
 #' @param keep Whether to retain work files after reading results.
 #' @param timeout Maximum process runtime in seconds.
 #' @param echo Whether to echo GAMS output while it runs.
@@ -16,6 +20,7 @@
 #' @return A `gams_result` object.
 #' @export
 solve.gams_problem <- function(a, b, ..., work_dir = NULL, system_directory = NULL,
+                               solver = NULL, gams_options = list(),
                                keep = FALSE, timeout = Inf, echo = FALSE) {
   if (!missing(b)) {
     gamsr_abort(
@@ -64,10 +69,16 @@ solve.gams_problem <- function(a, b, ..., work_dir = NULL, system_directory = NU
   source <- append_result_unload(compilation$source, model_ir(a), "results.gdx")
   source_file <- file.path(work_dir, paste0(a$name, "-solve.gms"))
   writeLines(source, con = source_file, useBytes = TRUE)
+  args <- solve_command_args(
+    a,
+    source_file = source_file,
+    solver = solver,
+    gams_options = gams_options
+  )
 
   process <- processx::run(
     command = gams,
-    args = c(basename(source_file), "lo=2"),
+    args = args,
     wd = work_dir,
     timeout = timeout,
     echo = echo,
@@ -100,6 +111,126 @@ solve.gams_problem <- function(a, b, ..., work_dir = NULL, system_directory = NU
     solver_status = data$solver_status,
     files_retained = isTRUE(keep)
   )
+}
+
+solve_command_args <- function(problem, source_file, solver = NULL, gams_options = list()) {
+  c(
+    basename(source_file),
+    "lo=2",
+    solver_argument(problem$problem, solver),
+    gams_option_arguments(gams_options)
+  )
+}
+
+solver_argument <- function(problem_type, solver, call = rlang::caller_env()) {
+  if (is.null(solver)) {
+    return(character())
+  }
+  validate_gams_option_value(solver, "solver", call = call)
+  validate_gams_option_token(solver, "solver", call = call)
+  paste0(tolower(problem_type), "=", solver)
+}
+
+gams_option_arguments <- function(gams_options, call = rlang::caller_env()) {
+  if (is.null(gams_options) || length(gams_options) == 0L) {
+    return(character())
+  }
+  if (!is.list(gams_options)) {
+    gamsr_abort(
+      "`gams_options` must be a named list.",
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+  option_names <- names(gams_options)
+  if (is.null(option_names) || any(!nzchar(option_names))) {
+    gamsr_abort(
+      "`gams_options` must have non-empty names.",
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+  if (anyDuplicated(tolower(option_names))) {
+    gamsr_abort(
+      "`gams_options` must not contain duplicate option names.",
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+
+  mapply(
+    function(name, value) {
+      validate_gams_option_token(name, "gams_options", call = call)
+      paste0(name, "=", format_gams_option_value(value, name, call = call))
+    },
+    option_names,
+    gams_options,
+    USE.NAMES = FALSE
+  )
+}
+
+format_gams_option_value <- function(value, name, call = rlang::caller_env()) {
+  validate_gams_option_value(value, name, call = call)
+
+  if (is.logical(value)) {
+    if (isTRUE(value)) "1" else "0"
+  } else if (is.numeric(value)) {
+    format(value, scientific = FALSE, trim = TRUE)
+  } else {
+    value
+  }
+}
+
+validate_gams_option_value <- function(value, name, call = rlang::caller_env()) {
+  if (length(value) != 1L || is.na(value)) {
+    gamsr_abort(
+      sprintf("GAMS option `%s` must be a single non-missing scalar value.", name),
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+  if (!(is.character(value) || is.numeric(value) || is.logical(value))) {
+    gamsr_abort(
+      sprintf("GAMS option `%s` must be character, numeric, or logical.", name),
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+  if (is.numeric(value) && !is.finite(value)) {
+    gamsr_abort(
+      sprintf("GAMS option `%s` must be finite.", name),
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+  if (is.character(value) && !nzchar(value)) {
+    gamsr_abort(
+      sprintf("GAMS option `%s` must not be empty.", name),
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+  if (is.character(value) && grepl("[\r\n]", value)) {
+    gamsr_abort(
+      sprintf("GAMS option `%s` must not contain line breaks.", name),
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+
+  invisible(value)
+}
+
+validate_gams_option_token <- function(value, arg, call = rlang::caller_env()) {
+  if (!is_string(value) || !grepl("^[A-Za-z][A-Za-z0-9_]*$", value)) {
+    gamsr_abort(
+      sprintf("`%s` must use GAMS identifier syntax.", arg),
+      class = "gamsr_error_invalid_option",
+      call = call
+    )
+  }
+
+  invisible(value)
 }
 
 append_result_unload <- function(source, ir, result_file) {

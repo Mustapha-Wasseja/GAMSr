@@ -14,3 +14,6 @@
 - Added real input GDX write/read tests when `gamstransfer` is installed.
 - Added safe `solve()` execution scaffolding, result-GDX import, status helpers,
   objective values, variable records, and equation records.
+- Added gated local GAMS solve tests for scalar and transportation LP fixtures.
+- Added solver selection and scalar GAMS command-line options to `solve()`.
+- Improved local GAMS discovery and version probing.
