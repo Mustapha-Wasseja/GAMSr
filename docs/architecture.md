@@ -9,12 +9,13 @@
    math functions, and summation.
 4. Compiler layer: normalized IR and deterministic full-model GAMS renderer for
    compile-only workflows.
-5. Transfer layer: adapter boundary over optional GAMS Transfer R plus a mock
-   adapter for tests.
-6. Execution layer: safe process invocation, result-GDX reading, and result
-   accessors.
+5. Transfer layer: adapter boundary over optional GAMS Transfer R, input-GDX
+   writing, and a mock adapter for tests.
+6. Execution layer: GDX-backed input loading, solver option-file writing, safe
+   process invocation, result-GDX reading, and result accessors.
 
 The current repository implements layers 1 through 6 for inline-data
-compile-only workflows, optional GDX input writing, and solve/result APIs.
-When GAMS is installed, gated integration tests solve scalar and transportation
-LP fixtures and read the resulting GDX records back into R.
+compile-only workflows, GDX-backed local solves, optional solver option files,
+and solve/result APIs. When GAMS is installed, gated integration tests solve
+scalar LP, transportation LP, binary MIP, and infeasible LP fixtures and read
+the resulting GDX records back into R.

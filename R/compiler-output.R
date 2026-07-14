@@ -94,13 +94,29 @@ compile_gams <- function(problem, directory = tempdir(), filename = NULL, overwr
     create_dir = TRUE
   )
 
+  new_gams_compilation(
+    problem_name = problem$name,
+    source_file = source_file,
+    work_dir = normalizePath(directory, winslash = "/", mustWork = TRUE),
+    source = generated_gams(problem),
+    ir = model_ir(problem),
+    data_mode = "inline"
+  )
+}
+
+new_gams_compilation <- function(problem_name, source_file, work_dir, source, ir,
+                                 data_mode = "inline", input_file = NA_character_,
+                                 option_file = NA_character_) {
   structure(
     list(
-      problem_name = problem$name,
+      problem_name = problem_name,
       source_file = source_file,
-      work_dir = normalizePath(directory, winslash = "/", mustWork = TRUE),
-      source = generated_gams(problem),
-      ir = model_ir(problem)
+      work_dir = work_dir,
+      source = source,
+      ir = ir,
+      data_mode = data_mode,
+      input_file = input_file,
+      option_file = option_file
     ),
     class = "gams_compilation"
   )

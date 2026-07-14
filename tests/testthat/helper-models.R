@@ -19,6 +19,43 @@ scalar_lp_problem <- function() {
   )
 }
 
+binary_mip_problem <- function() {
+  model <- gams_model("binary_mip")
+  x <- gams_variable(model, "x", type = "binary")
+  y <- gams_variable(model, "y", type = "binary")
+  capacity <- gams_equation(model, "capacity")
+
+  capacity[] <- x + y <= 1
+
+  gams_problem(
+    model,
+    name = "binary_mip_problem",
+    equations = capacity,
+    objective = y,
+    sense = "max",
+    problem = "MIP"
+  )
+}
+
+infeasible_lp_problem <- function() {
+  model <- gams_model("infeasible_lp")
+  x <- gams_variable(model, "x", type = "positive")
+  lower <- gams_equation(model, "lower")
+  upper <- gams_equation(model, "upper")
+
+  lower[] <- x >= 1
+  upper[] <- x <= 0
+
+  gams_problem(
+    model,
+    name = "infeasible_lp_problem",
+    equations = c(lower, upper),
+    objective = x,
+    sense = "min",
+    problem = "LP"
+  )
+}
+
 transport_problem <- function() {
   model <- gams_model("transport")
   i <- gams_set(

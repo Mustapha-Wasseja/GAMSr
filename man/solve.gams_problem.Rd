@@ -12,6 +12,8 @@
   system_directory = NULL,
   solver = NULL,
   gams_options = list(),
+  solver_options = NULL,
+  data = c("gdx", "inline"),
   keep = FALSE,
   timeout = Inf,
   echo = FALSE
@@ -34,6 +36,14 @@ command-line solver override for the problem type, such as \code{lp=soplex}.}
 
 \item{gams_options}{Named list of additional scalar GAMS command-line
 options, such as \code{list(reslim = 60, optcr = 0.01)}.}
+
+\item{solver_options}{Optional named list of solver-specific option-file
+entries. Requires \code{solver}; GAMSr writes \verb{<solver>.opt} in the work
+directory and passes \code{optfile=1} to GAMS.}
+
+\item{data}{How input set and parameter records are supplied to GAMS.
+\code{"gdx"} writes and loads \code{input.gdx}; \code{"inline"} renders records directly
+into the generated \code{.gms} source.}
 
 \item{keep}{Whether to retain work files after reading results.}
 

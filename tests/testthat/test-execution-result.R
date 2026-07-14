@@ -73,6 +73,16 @@ write_fake_result_gdx <- function(problem, file) {
   Parameter$new(container, "GAMSr_modelstat", records = 1)
   Parameter$new(container, "GAMSr_solvestat", records = 1)
   Parameter$new(container, "GAMSr_objective_value", records = 123)
+  metric <- Set$new(container, "GAMSr_solve_metric", records = GAMSr:::.solve_summary_metrics)
+  Parameter$new(
+    container,
+    "GAMSr_solve_summary",
+    domain = list(metric),
+    records = data.frame(
+      GAMSr_solve_metric = c("model_status", "solver_status", "objective_value", "iterations"),
+      value = c(1, 1, 123, 4)
+    )
+  )
   container$write(file)
 }
 
@@ -89,6 +99,9 @@ test_that("read_solution_gdx imports status and symbol records", {
   expect_identical(data$solver_status$code, 1L)
   expect_identical(data$solver_status$label, "Normal")
   expect_identical(data$objective, 123)
+  expect_equal(data$summary$value[data$summary$metric == "objective_value"], 123)
+  expect_equal(data$summary$value[data$summary$metric == "iterations"], 4)
+  expect_equal(data$summary$value[data$summary$metric == "sum_infeasibilities"], 0)
   expect_equal(nrow(data$variables$x), 4)
   expect_equal(nrow(data$equations$supply), 2)
 })
@@ -109,12 +122,17 @@ test_that("result accessors return statuses and tidy records", {
     objective = data$objective,
     model_status = data$model_status,
     solver_status = data$solver_status,
-    files_retained = TRUE
+    files_retained = TRUE,
+    summary = data$summary,
+    files = list(result_file = path),
+    command = list(data = "gdx")
   )
 
   expect_identical(objective_value(result), 123)
   expect_identical(model_status(result)$label, "OptimalGlobal")
   expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(solve_summary(result)$value[solve_summary(result)$metric == "iterations"], 4)
+  expect_identical(result_files(result)$result_file, path)
   expect_equal(nrow(variable_values(result, "x")), 4)
   expect_equal(nrow(variable_values(result, problem$model$get_symbol("x"))), 4)
   expect_equal(nrow(equation_values(result, "supply")), 2)
@@ -135,7 +153,8 @@ test_that("solve builds safe GAMS command arguments", {
     scalar_lp_problem(),
     source_file = "scalar_lp_problem-solve.gms",
     solver = "soplex",
-    gams_options = list(reslim = 60, threads = 2, optcr = 0.01, profile = TRUE)
+    gams_options = list(reslim = 60, threads = 2, optcr = 0.01, profile = TRUE),
+    use_solver_option_file = TRUE
   )
 
   expect_identical(
@@ -144,6 +163,7 @@ test_that("solve builds safe GAMS command arguments", {
       "scalar_lp_problem-solve.gms",
       "lo=2",
       "lp=soplex",
+      "optfile=1",
       "reslim=60",
       "threads=2",
       "optcr=0.01",
@@ -170,6 +190,58 @@ test_that("solve builds safe GAMS command arguments", {
     ),
     class = "gamsr_error_invalid_option"
   )
+  expect_error(
+    GAMSr:::solve_command_args(
+      scalar_lp_problem(),
+      "model.gms",
+      gams_options = list(optfile = 2),
+      use_solver_option_file = TRUE
+    ),
+    class = "gamsr_error_invalid_option"
+  )
+})
+
+test_that("solver option files are written safely", {
+  directory <- withr::local_tempdir()
+  path <- GAMSr:::write_solver_option_file(
+    directory,
+    solver = "soplex",
+    solver_options = list(feasibility_tolerance = 1e-7, display = FALSE)
+  )
+
+  expect_identical(basename(path), "soplex.opt")
+  expect_identical(
+    readLines(path, warn = FALSE),
+    c("feasibility_tolerance 0.0000001", "display 0")
+  )
+  expect_error(
+    GAMSr:::write_solver_option_file(
+      directory,
+      solver = NULL,
+      solver_options = list(display = FALSE)
+    ),
+    class = "gamsr_error_invalid_option"
+  )
+  expect_error(
+    GAMSr:::write_solver_option_file(
+      directory,
+      solver = "soplex",
+      solver_options = list(`bad-name` = 1)
+    ),
+    class = "gamsr_error_invalid_option"
+  )
+})
+
+test_that("execution source can load input data from GDX", {
+  source <- GAMSr:::render_gams_ir(
+    model_ir(transport_problem()),
+    data_source = "gdx",
+    input_file = "input.gdx"
+  )
+
+  expect_match(source, "$gdxIn \"input.gdx\"", fixed = TRUE)
+  expect_match(source, "$load i j a b c", fixed = TRUE)
+  expect_no_match(source, "seattle, san-diego", fixed = TRUE)
 })
 
 test_that("solve runs a scalar LP with local GAMS", {
@@ -183,6 +255,7 @@ test_that("solve runs a scalar LP with local GAMS", {
   expect_identical(solver_status(result)$code, 1L)
   expect_equal(objective_value(result), 1)
   expect_true(file.exists(result$result_file))
+  expect_true(is.na(result_files(result)$input_file))
   expect_equal(variable_values(result, "x")$level[[1L]], 1)
 })
 
@@ -190,7 +263,7 @@ test_that("solve runs the transportation LP with local GAMS", {
   skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
   skip_if_not(gams_available(), "GAMS is not installed")
 
-  result <- solve(transport_problem(), gams_options = list(limrow = 0, limcol = 0))
+  result <- solve(transport_problem(), keep = TRUE, gams_options = list(limrow = 0, limcol = 0))
   x <- variable_values(result, "x")
 
   expect_identical(model_status(result)$label, "OptimalGlobal")
@@ -198,6 +271,34 @@ test_that("solve runs the transportation LP with local GAMS", {
   expect_equal(objective_value(result), 153.675)
   expect_equal(nrow(x), 6)
   expect_equal(sum(x$level), 900)
+  expect_true(file.exists(result_files(result)$input_file))
+  expect_true(file.exists(result_files(result)$listing_file))
+  summary <- solve_summary(result)
+  expect_equal(summary$value[summary$metric == "objective_value"], 153.675)
+  expect_equal(summary$value[summary$metric == "sum_infeasibilities"], 0)
+})
+
+test_that("solve runs a binary MIP with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(binary_mip_problem(), gams_options = list(limrow = 0, limcol = 0))
+
+  expect_identical(model_status(result)$label, "OptimalGlobal")
+  expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(objective_value(result), 1)
+  expect_equal(variable_values(result, "y")$level[[1L]], 1)
+})
+
+test_that("solve reports infeasible LP status with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(infeasible_lp_problem(), gams_options = list(limrow = 0, limcol = 0))
+
+  expect_identical(model_status(result)$label, "InfeasibleNoSolution")
+  expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(solve_summary(result)$value[solve_summary(result)$metric == "model_status"], 19)
 })
 
 test_that("execution source appends result unload statements", {
@@ -210,5 +311,6 @@ test_that("execution source appends result unload statements", {
     fixed = TRUE
   )
   expect_match(source, "GAMSr_modelstat = scalar_lp_problem.modelstat", fixed = TRUE)
+  expect_match(source, "Parameter GAMSr_solve_summary", fixed = TRUE)
   expect_match(source, "execute_unload \"results.gdx\"", fixed = TRUE)
 })

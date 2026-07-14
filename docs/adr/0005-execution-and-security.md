@@ -18,9 +18,9 @@ Use `processx::run()` with argument vectors and avoid shell invocation.
 ## Consequences
 
 The execution layer writes deterministic source to an isolated work directory,
-passes arguments directly to GAMS, appends a result-GDX unload block, and reads
-results through GAMS Transfer R. Solver names and options must be validated
-before being passed to GAMS.
+writes optional input GDX and solver option files, passes arguments directly to
+GAMS, appends a result-GDX unload block, and reads results through GAMS Transfer
+R. Solver names and options must be validated before being passed to GAMS.
 
 ## Rejected Alternatives
 
@@ -35,8 +35,9 @@ string construction.
 ## Implementation Note
 
 `solve.gams_problem()` now checks for `gamstransfer` and a local GAMS
-executable, writes a solve-specific `.gms` file, invokes GAMS through
-`processx::run()` without a shell, and imports result records from GDX. Gated
-integration tests run scalar and transportation LP fixtures when GAMS is
-available; dependency-free tests still verify clear unavailable-GAMS errors and
-fake-result GDX parsing.
+executable, writes a solve-specific `.gms` file, writes `input.gdx` by default
+when set or parameter records exist, invokes GAMS through `processx::run()`
+without a shell, and imports result records from GDX. Gated integration tests
+run scalar LP, transportation LP, binary MIP, and infeasible LP fixtures when
+GAMS is available; dependency-free tests still verify clear unavailable-GAMS
+errors and fake-result GDX parsing.

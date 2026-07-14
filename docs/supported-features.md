@@ -1,6 +1,6 @@
 # Supported Features
 
-Last updated: 2026-07-13.
+Last updated: 2026-07-14.
 
 ## Implemented
 
@@ -42,20 +42,26 @@ Last updated: 2026-07-13.
 - Safe `solve()` method for `gams_problem` objects using `processx` argument
   vectors, no shell command construction.
 - Optional solver selection and scalar GAMS command-line options in `solve()`.
+- GDX-backed local solve execution that writes `input.gdx` and uses `$load`.
+- Solver-specific option-file generation through `solver_options`.
 - Result GDX reading through `read_solution_gdx()`.
 - Result accessors: `model_status()`, `solver_status()`, `objective_value()`,
-  `variable_values()`, and `equation_values()`.
+  `variable_values()`, `equation_values()`, `solve_summary()`, and
+  `result_files()`.
+- Solve-summary metadata for objective values/bounds, resource time, elapsed
+  solve time, solver iterations, model size, and infeasibility attributes when
+  GAMS reports them.
 - GAMS executable discovery helpers, including common Windows install
   locations.
-- Gated end-to-end solve tests against a local GAMS installation.
+- Gated end-to-end solve tests against a local GAMS installation for LP, MIP,
+  and infeasible LP fixtures.
 
 ## Not Yet Implemented
 
-- Solver option files.
 - Broad full-model GAMS syntax validation across problem classes.
-- Richer result metadata, including listing/log summaries, solve time,
-  iteration counts, resource usage, infeasibility summaries, and solver-specific
-  details.
-- GDX-backed model execution that loads input data from GDX instead of rendering
-  all records inline.
+- Listing/log parsing and solver-specific detail extraction beyond the current
+  GAMS model attributes.
+- Stable unbounded-model classification tests across solvers.
+- Broader modeling syntax: aliases, conditions, ord/card, lead/lag, and more
+  intrinsic functions.
 - Remote execution through GAMS Engine or other hosted solve backends.

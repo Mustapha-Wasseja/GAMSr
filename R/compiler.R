@@ -73,11 +73,13 @@ sanitize_private_name <- function(name) {
   substr(name, 1L, 63L)
 }
 
-render_gams_ir <- function(ir) {
+render_gams_ir <- function(ir, data_source = c("inline", "gdx"), input_file = NULL) {
+  data_source <- match.arg(data_source)
   sections <- list(
     render_header(ir),
-    render_sets(ir$sets),
-    render_parameters(ir$parameters),
+    render_sets(ir$sets, include_records = identical(data_source, "inline")),
+    render_parameters(ir$parameters, include_records = identical(data_source, "inline")),
+    render_gdx_load(ir, input_file, enabled = identical(data_source, "gdx")),
     render_variables(ir$variables, ir$objective_variable),
     render_equation_declarations(ir$equations, ir$objective_equation),
     render_equation_definitions(ir),
@@ -102,16 +104,20 @@ render_header <- function(ir) {
   )
 }
 
-render_sets <- function(sets) {
+render_sets <- function(sets, include_records = TRUE) {
   if (length(sets) == 0L) {
     return(character())
   }
 
-  unlist(lapply(sets, render_set), use.names = FALSE)
+  unlist(lapply(sets, render_set, include_records = include_records), use.names = FALSE)
 }
 
-render_set <- function(set) {
+render_set <- function(set, include_records = TRUE) {
   description <- render_description(set$description)
+  if (!isTRUE(include_records)) {
+    return(sprintf("Set %s%s;", set$name, description))
+  }
+
   if (nrow(set$records) == 0L) {
     return(sprintf("Set %s%s / /;", set$name, description))
   }
@@ -120,19 +126,22 @@ render_set <- function(set) {
   sprintf("Set %s%s / %s /;", set$name, description, records)
 }
 
-render_parameters <- function(parameters) {
+render_parameters <- function(parameters, include_records = TRUE) {
   if (length(parameters) == 0L) {
     return(character())
   }
 
-  unlist(lapply(parameters, render_parameter), use.names = FALSE)
+  unlist(lapply(parameters, render_parameter, include_records = include_records), use.names = FALSE)
 }
 
-render_parameter <- function(parameter) {
+render_parameter <- function(parameter, include_records = TRUE) {
   domain <- render_domain(parameter$domain)
   description <- render_description(parameter$description)
 
   if (length(parameter$domain) == 0L) {
+    if (!isTRUE(include_records)) {
+      return(sprintf("Scalar %s%s;", parameter$name, description))
+    }
     value <- if (nrow(parameter$records) == 0L) 0 else parameter$records$value[[1L]]
     return(sprintf(
       "Scalar %s%s / %s /;",
@@ -143,6 +152,9 @@ render_parameter <- function(parameter) {
   }
 
   if (nrow(parameter$records) == 0L) {
+    return(sprintf("Parameter %s%s%s;", parameter$name, domain, description))
+  }
+  if (!isTRUE(include_records)) {
     return(sprintf("Parameter %s%s%s;", parameter$name, domain, description))
   }
 
@@ -159,6 +171,32 @@ render_parameter_records <- function(parameter) {
     key <- paste(format_gams_label(unname(row[key_columns])), collapse = ".")
     paste(key, format_constant(as.numeric(row[["value"]])))
   })
+}
+
+render_gdx_load <- function(ir, input_file, enabled = FALSE) {
+  if (!isTRUE(enabled)) {
+    return(character())
+  }
+
+  load_symbols <- c(
+    vapply(ir$sets, `[[`, "name", FUN.VALUE = character(1L)),
+    vapply(ir$parameters, `[[`, "name", FUN.VALUE = character(1L))
+  )
+  if (length(load_symbols) == 0L) {
+    return(character())
+  }
+  if (is.null(input_file)) {
+    gamsr_abort(
+      "`input_file` is required when rendering GDX-backed source.",
+      class = "gamsr_error_invalid_path"
+    )
+  }
+
+  c(
+    sprintf("$gdxIn %s", quote_gams_text(input_file)),
+    sprintf("$load %s", paste(load_symbols, collapse = " ")),
+    "$gdxIn"
+  )
 }
 
 render_variables <- function(variables, objective_variable) {

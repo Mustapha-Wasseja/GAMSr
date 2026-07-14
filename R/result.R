@@ -1,15 +1,19 @@
 new_gams_result <- function(problem, compilation, process, result_file, variables,
                             equations, objective, model_status, solver_status,
-                            files_retained) {
+                            files_retained, summary = empty_solve_summary(),
+                            files = list(), command = list()) {
   structure(
     list(
       problem = problem,
       compilation = compilation,
       process = process,
       result_file = result_file,
+      files = files,
+      command = command,
       variables = variables,
       equations = equations,
       objective = objective,
+      summary = summary,
       status = list(
         model = model_status,
         solver = solver_status
@@ -19,6 +23,24 @@ new_gams_result <- function(problem, compilation, process, result_file, variable
     class = "gams_result"
   )
 }
+
+.solve_summary_metrics <- c(
+  "model_status",
+  "solver_status",
+  "objective_value",
+  "objective_bound",
+  "objective_variable_level",
+  "resource_seconds",
+  "elapsed_solve_seconds",
+  "elapsed_solver_seconds",
+  "iterations",
+  "equations",
+  "variables",
+  "nonzeros",
+  "domain_violations",
+  "sum_infeasibilities",
+  "max_infeasibility"
+)
 
 #' Read a solved result GDX file
 #'
@@ -63,6 +85,7 @@ read_solution_gdx <- function(problem, file) {
       objective = read_result_scalar(container, "GAMSr_objective_value"),
       model_status = new_model_status(read_result_scalar(container, "GAMSr_modelstat")),
       solver_status = new_solver_status(read_result_scalar(container, "GAMSr_solvestat")),
+      summary = read_solve_summary(container),
       variables = read_result_records(container, variable_symbols),
       equations = read_result_records(container, equation_symbols)
     ),
@@ -92,6 +115,32 @@ read_result_records <- function(container, symbols) {
   stats::setNames(records, vapply(symbols, `[[`, "name", FUN.VALUE = character(1L)))
 }
 
+read_solve_summary <- function(container) {
+  records <- container["GAMSr_solve_summary"]$records
+  if (is.null(records) || nrow(records) == 0L || !("value" %in% names(records))) {
+    return(empty_solve_summary())
+  }
+
+  metric_column <- setdiff(names(records), "value")[[1L]]
+  values <- stats::setNames(rep(0, length(.solve_summary_metrics)), .solve_summary_metrics)
+  present <- as.character(records[[metric_column]])
+  values[present] <- as.numeric(records$value)
+  data.frame(
+    metric = names(values),
+    value = as.numeric(values),
+    stringsAsFactors = FALSE,
+    row.names = NULL
+  )
+}
+
+empty_solve_summary <- function() {
+  data.frame(
+    metric = .solve_summary_metrics,
+    value = rep(NA_real_, length(.solve_summary_metrics)),
+    stringsAsFactors = FALSE
+  )
+}
+
 #' Inspect solve status
 #'
 #' @param result A result created by `solve()`.
@@ -119,6 +168,29 @@ solver_status <- function(result) {
 objective_value <- function(result) {
   validate_gams_result(result)
   result$objective
+}
+
+#' Extract solve summary metadata
+#'
+#' @param result A result created by `solve()`.
+#'
+#' @return A data frame with `metric` and `value` columns.
+#' @export
+solve_summary <- function(result) {
+  validate_gams_result(result)
+  result$summary
+}
+
+#' Inspect retained solve files
+#'
+#' @param result A result created by `solve()`.
+#'
+#' @return A named list of retained file paths. Paths are `NA` when `solve()`
+#'   was run with `keep = FALSE`.
+#' @export
+result_files <- function(result) {
+  validate_gams_result(result)
+  result$files
 }
 
 #' Extract variable records
@@ -185,5 +257,25 @@ print.gams_result <- function(x, ...) {
   cat(sprintf("Model status: %d (%s)\n", x$status$model$code, x$status$model$label))
   cat(sprintf("Solver status: %d (%s)\n", x$status$solver$code, x$status$solver$label))
   cat(sprintf("Objective value: %s\n", format(x$objective, scientific = FALSE, trim = TRUE)))
+  elapsed <- summary_value(x$summary, "elapsed_solve_seconds")
+  if (!is.na(elapsed)) {
+    cat(sprintf("Solve time: %s seconds\n", format(elapsed, scientific = FALSE, trim = TRUE)))
+  }
+  if (!is.null(x$command$data)) {
+    cat(sprintf("Data mode: %s\n", x$command$data))
+  }
   invisible(x)
+}
+
+summary_value <- function(summary, metric) {
+  if (!is.data.frame(summary) || !all(c("metric", "value") %in% names(summary))) {
+    return(NA_real_)
+  }
+
+  value <- summary$value[summary$metric == metric]
+  if (length(value) == 0L) {
+    NA_real_
+  } else {
+    value[[1L]]
+  }
 }

@@ -25,8 +25,12 @@ This repository is in early active development. The package currently provides:
   writing through GAMS Transfer R;
 - safe local `solve()` execution with result-GDX reading when GAMS is installed;
 - optional solver selection and scalar GAMS command-line options in `solve()`;
+- GDX-backed solve execution that writes input data to `input.gdx` instead of
+  rendering records inline;
+- solver-specific option-file generation through `solver_options`;
 - result helpers: `model_status()`, `solver_status()`, `objective_value()`,
-  `variable_values()`, and `equation_values()`;
+  `variable_values()`, `equation_values()`, `solve_summary()`, and
+  `result_files()`;
 - compile-only architecture notes and ADRs.
 
 It includes gated local GAMS integration tests, but broad solver and model-class
@@ -100,8 +104,9 @@ of GAMS.
 
 ## Solving Status
 
-When GAMS and `gamstransfer` are available, `solve()` runs GAMS without invoking
-a shell and reads status, objective, variable, and equation records back into R:
+When GAMS and `gamstransfer` are available, `solve()` writes input data to GDX,
+runs GAMS without invoking a shell, and reads status, objective, variable,
+equation, and solve-summary records back into R:
 
 ```r
 result <- solve(problem)
@@ -110,11 +115,13 @@ solver_status(result)
 objective_value(result)
 variable_values(result, x)
 equation_values(result, supply)
+solve_summary(result)
 
 result <- solve(
   problem,
   solver = "soplex",
-  gams_options = list(reslim = 60, optcr = 0.01)
+  gams_options = list(reslim = 60, optcr = 0.01),
+  solver_options = list(display = 0)
 )
 ```
 
