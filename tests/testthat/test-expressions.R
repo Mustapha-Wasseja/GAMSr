@@ -58,7 +58,8 @@ test_that("comparisons and gams_eq create symbolic relationships", {
   expect_identical(format_gams_expression(x[i] >= 1), "x(i) =g= 1")
   expect_identical(format_gams_expression(gams_eq(x[i], 1)), "x(i) =e= 1")
   expect_identical(format_gams_expression(x[i] == 1), "x(i) =e= 1")
-  expect_error(x[i] < 1, class = "gamsr_error_unsupported_operator")
+  expect_identical(format_gams_expression(x[i] < 1), "x(i) < 1")
+  expect_identical(format_gams_expression(x[i] != 1), "x(i) <> 1")
 })
 
 test_that("gams_sum binds indices and formats deterministically", {

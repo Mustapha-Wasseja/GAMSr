@@ -6,7 +6,7 @@
 2. Symbol layer: immutable S3 objects represent sets, parameters, variables,
    and equations.
 3. Expression layer: S3 AST nodes represent algebra, indexing, relationships,
-   math functions, and summation.
+   logical conditions, conditional terms, math functions, and summation.
 4. Compiler layer: normalized IR and deterministic full-model GAMS renderer for
    compile-only workflows.
 5. Transfer layer: adapter boundary over optional GAMS Transfer R, input-GDX
@@ -18,4 +18,5 @@ The current repository implements layers 1 through 6 for inline-data
 compile-only workflows, GDX-backed local solves, optional solver option files,
 and solve/result APIs. When GAMS is installed, gated integration tests solve
 scalar LP, transportation LP, binary MIP, and infeasible LP fixtures and read
-the resulting GDX records back into R.
+the resulting GDX records back into R. Ordered-set and conditional LP fixtures
+also verify aliases, `ord/card`, filtered sums, and conditional equation domains.

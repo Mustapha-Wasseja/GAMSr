@@ -303,6 +303,22 @@ test_that("solve runs an alias and ordered-set LP with local GAMS", {
   expect_equal(x$level, c(1 / 3, 2 / 3, 1), tolerance = 1e-8)
 })
 
+test_that("solve runs a conditionally generated LP with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(conditional_lp_problem(), gams_options = list(limrow = 0, limcol = 0))
+  x <- variable_values(result, "x")
+  floor <- equation_values(result, "floor")
+
+  expect_identical(model_status(result)$label, "OptimalGlobal")
+  expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(objective_value(result), 4)
+  expect_equal(as.character(x$i), c("a", "c"))
+  expect_equal(x$level, c(1, 3))
+  expect_equal(as.character(floor$i), c("a", "c"))
+})
+
 test_that("solve reports infeasible LP status with local GAMS", {
   skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
   skip_if_not(gams_available(), "GAMS is not installed")

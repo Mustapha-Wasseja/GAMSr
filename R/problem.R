@@ -186,10 +186,28 @@ expr_symbols <- function(expression) {
     "sum" = expr_symbols(expression$expression),
     "math_function" = unlist(lapply(expression$arguments, expr_symbols), recursive = FALSE),
     "set_function" = list(expression$set),
+    "logical_operation" = c(
+      expr_symbols(expression$lhs),
+      if (is.null(expression$rhs)) list() else expr_symbols(expression$rhs)
+    ),
+    "conditional" = c(
+      expr_symbols(expression$expression),
+      expr_symbols(expression$condition)
+    ),
+    "same_as" = same_as_symbols(expression),
     gamsr_abort(
       sprintf("Unsupported expression node type `%s`.", expression$type),
       class = "gamsr_error_invalid_expression"
     )
+  )
+}
+
+same_as_symbols <- function(expression) {
+  operands <- list(expression$lhs, expression$rhs)
+  lapply(
+    Filter(function(operand) identical(operand$type, "set"), operands),
+    `[[`,
+    "value"
   )
 }
 

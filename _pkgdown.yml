@@ -19,6 +19,8 @@ reference:
       - compile_gams
       - format_gams_expression
       - gams_sum
+      - gams_where
+      - gams_same_as
       - set_functions
       - gams_eq
       - gams_math

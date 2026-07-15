@@ -2,12 +2,14 @@
 #'
 #' @param index A GAMSr set or a set vector created with `c(i, j)`.
 #' @param expression A GAMSr symbolic expression.
+#' @param condition Optional symbolic condition used to filter the summation
+#'   domain.
 #'
 #' @return A `gams_expr_sum` object.
 #' @export
-gams_sum <- function(index, expression) {
+gams_sum <- function(index, expression, condition = NULL) {
   indices <- normalize_sum_indices(index)
-  new_sum_expression(indices, expression)
+  new_sum_expression(indices, expression, condition = condition)
 }
 
 normalize_sum_indices <- function(index, call = rlang::caller_env()) {

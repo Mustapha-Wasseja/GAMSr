@@ -75,6 +75,34 @@ ordered_alias_problem <- function() {
   )
 }
 
+conditional_lp_problem <- function() {
+  model <- gams_model("conditional_lp")
+  i <- gams_set(model, "i", records = c("a", "b", "c"))
+  active <- gams_parameter(
+    model,
+    "active",
+    domain = i,
+    records = c(a = 1, b = 0, c = 1)
+  )
+  x <- gams_variable(model, "x", domain = i, type = "positive")
+  floor <- gams_equation(model, "floor", domain = i)
+
+  floor[i] <- gams_where(x[i] >= gams_ord(i), active[i] == 1)
+
+  gams_problem(
+    model,
+    name = "conditional_lp_problem",
+    equations = floor,
+    objective = gams_sum(
+      i,
+      gams_where(x[i], active[i] == 1),
+      condition = gams_ord(i) <= gams_card(i)
+    ),
+    sense = "min",
+    problem = "LP"
+  )
+}
+
 transport_problem <- function() {
   model <- gams_model("transport")
   i <- gams_set(

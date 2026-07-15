@@ -4,12 +4,15 @@
 \alias{gams_sum}
 \title{Sum a symbolic expression over one or more sets}
 \usage{
-gams_sum(index, expression)
+gams_sum(index, expression, condition = NULL)
 }
 \arguments{
 \item{index}{A GAMSr set or a set vector created with \code{c(i, j)}.}
 
 \item{expression}{A GAMSr symbolic expression.}
+
+\item{condition}{Optional symbolic condition used to filter the summation
+domain.}
 }
 \value{
 A \code{gams_expr_sum} object.

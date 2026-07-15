@@ -25,3 +25,8 @@
   be composed naturally in either operand order.
 - Added `gams_alias()` plus `gams_ord()` and `gams_card()`, with a gated
   end-to-end GAMS solve test using GDX-backed set data.
+- Added conditional modeling with `gams_where()`, filtered `gams_sum()`,
+  natural relational and logical operators, and `gams_same_as()`.
+- Added validation that rejects decision variables in dollar conditions and
+  distinguishes strict logical comparisons from equation relationships.
+- Added an end-to-end GDX-backed conditional LP solve test.

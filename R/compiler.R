@@ -251,7 +251,12 @@ render_equation_definitions <- function(ir) {
 
 render_equation_definition <- function(equation) {
   lhs <- render_symbol_with_domain(equation)
-  sprintf("%s.. %s;", lhs, format_gams_expression(equation$definition$expression))
+  expression <- equation$definition$expression
+  if (inherits(expression, "gams_expr_conditional")) {
+    lhs <- paste0(lhs, "$(", format_condition_expr(expression$condition), ")")
+    expression <- expression$expression
+  }
+  sprintf("%s.. %s;", lhs, format_gams_expression(expression))
 }
 
 render_model_and_solve <- function(ir) {

@@ -18,6 +18,8 @@ This repository is in early active development. The package currently provides:
 - canonical records for basic set and parameter inputs;
 - symbolic indexing, arithmetic, equation relationships, and `gams_sum()`;
 - same-set aliases plus ordered-set helpers `gams_ord()` and `gams_card()`;
+- conditional equations and terms with `gams_where()`, filtered `gams_sum()`,
+  logical operators, and `gams_same_as()`;
 - deterministic expression formatting for compile-only inspection;
 - `gams_problem()`, `model_ir()`, and `generated_gams()` for compile-only
   GAMS source generation;
@@ -72,6 +74,10 @@ supply[i] <- gams_sum(j, x[i, j]) <= a[i]
 
 format_gams_expression(supply$definition$expression)
 #> sum(j, x(i,j)) =l= a(i)
+
+# Filter an equation domain or a summation with parameter data.
+# supply[i] <- gams_where(gams_sum(j, x[i, j]) <= a[i], a[i] > 0)
+# gams_sum(i, a[i], condition = a[i] > 0)
 
 problem <- gams_problem(
   m,

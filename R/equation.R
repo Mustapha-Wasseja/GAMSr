@@ -26,11 +26,16 @@ gams_equation <- function(model, name, domain = NULL, description = NULL) {
     rlang::dots_list(..., .ignore_empty = "all")
   )
   expression <- as_gams_expr(value)
+  relationship <- equation_relationship(expression)
 
-  if (!inherits(expression, "gams_expr_comparison")) {
+  if (!inherits(relationship, "gams_expr_comparison") ||
+        !(relationship$relation %in% c("le", "ge", "eq"))) {
     gamsr_abort(
       "Equation definitions must be symbolic relationships.",
-      i = "Use `<=`, `>=`, `==`, or `gams_eq()` to define an equation.",
+      i = paste(
+        "Use `<=`, `>=`, `==`, or `gams_eq()` to define an equation,",
+        "optionally wrapped in `gams_where()`."
+      ),
       class = "gamsr_error_invalid_equation_definition"
     )
   }
@@ -39,6 +44,13 @@ gams_equation <- function(model, name, domain = NULL, description = NULL) {
   x$definition <- list(indices = indices, expression = expression)
   x$model$update_symbol(x)
   x
+}
+
+equation_relationship <- function(expression) {
+  if (inherits(expression, "gams_expr_conditional")) {
+    return(expression$expression)
+  }
+  expression
 }
 
 normalize_equation_indices <- function(equation, indices, call = rlang::caller_env()) {
