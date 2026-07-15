@@ -211,22 +211,44 @@ normalize_same_as_operand <- function(x, arg, call = rlang::caller_env()) {
 
 as_gams_condition <- function(condition, call = rlang::caller_env()) {
   condition <- as_gams_expr(condition, call = call)
-  variables <- Filter(
-    function(symbol) inherits(symbol, "gams_variable"),
-    expr_symbols(condition)
-  )
-  if (length(variables) > 0L) {
+  if (contains_direct_variable(condition)) {
     gamsr_abort(
       "GAMS dollar conditions cannot contain decision variables.",
-      i = paste(
-        "Use parameters, sets, ord/card, or variable attributes when",
-        "attribute expressions are supported."
-      ),
+      i = "Use parameters, sets, ord/card, or symbolic variable attributes.",
       class = "gamsr_error_invalid_condition",
       call = call
     )
   }
   condition
+}
+
+contains_direct_variable <- function(expression) {
+  switch(
+    expression$type,
+    "constant" = FALSE,
+    "symbol_reference" = inherits(expression$symbol, "gams_variable"),
+    "indexed_reference" = inherits(expression$symbol, "gams_variable"),
+    "variable_attribute" = FALSE,
+    "binary_operation" = contains_direct_variable(expression$lhs) ||
+      contains_direct_variable(expression$rhs),
+    "unary_operation" = contains_direct_variable(expression$operand),
+    "comparison" = contains_direct_variable(expression$lhs) ||
+      contains_direct_variable(expression$rhs),
+    "sum" = contains_direct_variable(expression$expression) ||
+      (!is.null(expression$condition) && contains_direct_variable(expression$condition)),
+    "math_function" = any(vapply(
+      expression$arguments,
+      contains_direct_variable,
+      logical(1L)
+    )),
+    "set_function" = FALSE,
+    "logical_operation" = contains_direct_variable(expression$lhs) ||
+      (!is.null(expression$rhs) && contains_direct_variable(expression$rhs)),
+    "conditional" = contains_direct_variable(expression$expression) ||
+      contains_direct_variable(expression$condition),
+    "same_as" = FALSE,
+    FALSE
+  )
 }
 
 #' Apply a condition to an expression or equation relationship
@@ -374,6 +396,7 @@ format_expr <- function(expression, parent_precedence = 0L) {
     "logical_operation" = format_condition_expr(expression),
     "conditional" = format_conditional_expression(expression),
     "same_as" = format_same_as_expression(expression),
+    "variable_attribute" = format_variable_attribute(expression),
     gamsr_abort(
       sprintf("Unsupported expression node type `%s`.", expression$type),
       class = "gamsr_error_invalid_expression"
@@ -412,7 +435,7 @@ format_index <- function(index) {
   }
 
   if (is.character(index) && length(index) == 1L && !is.na(index)) {
-    return(format_gams_label(index))
+    return(quote_gams_label_literal(index))
   }
 
   gamsr_abort(

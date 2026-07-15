@@ -15,6 +15,8 @@ Last updated: 2026-07-15.
 - `gams_variable()` for `free`, `positive`, `negative`, `binary`, and
   `integer` declarations.
 - Variable attribute record setters for lower, upper, level, and fixed values.
+- Symbolic variable-attribute expressions for level, marginal, lower-bound, and
+  upper-bound values in assignments and conditions.
 - `gams_equation()` declaration.
 - Symbolic indexing with `[]` for sets and literal labels.
 - Symbolic arithmetic with `+`, `-`, `*`, `/`, `^`, and unary minus.
@@ -27,6 +29,10 @@ Last updated: 2026-07-15.
 - `gams_sum()` over one or more sets, with optional domain filtering through
   its `condition` argument.
 - `gams_same_as()` for set-element and literal-label matching.
+- `gams_dynamic_set()` for computed subsets over one or more static domains.
+- Ordered parameter and dynamic-set assignments with indexed replacement
+  syntax.
+- `gams_assign()` for assignment targets with optional dollar conditions.
 - `gams_alias()` for using multiple index names over the same base set.
 - Ordered-set helpers `gams_ord()` and `gams_card()`.
 - Symbolic math helpers: `gams_abs()`, `gams_exp()`, `gams_log()`,
@@ -71,6 +77,6 @@ Last updated: 2026-07-15.
 - Listing/log parsing and solver-specific detail extraction beyond the current
   GAMS model attributes.
 - Stable unbounded-model classification tests across solvers.
-- Broader modeling syntax: conditional assignments, dynamic sets, lead/lag,
-  and more intrinsic functions.
+- Broader modeling syntax: lead/lag, advanced set operations and domain
+  forwarding, and more intrinsic functions.
 - Remote execution through GAMS Engine or other hosted solve backends.

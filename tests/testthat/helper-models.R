@@ -103,6 +103,29 @@ conditional_lp_problem <- function() {
   )
 }
 
+dynamic_assignment_problem <- function() {
+  model <- gams_model("dynamic_assignment")
+  i <- gams_set(model, "i", records = c("a", "b", "c"))
+  p <- gams_parameter(model, "p", domain = i, records = c(a = 1, b = 2, c = 3))
+  target <- gams_parameter(model, "target", domain = i)
+  x <- gams_variable(model, "x", domain = i, type = "positive")
+  x <- set_level(x, c(a = 1, b = 0, c = 1))
+  active <- gams_dynamic_set(model, "active", domain = i)
+  active[i] <- gams_level(x[i]) > 0
+  gams_assign(target[i], p[i] * 2, condition = active[i])
+  floor <- gams_equation(model, "floor", domain = i)
+  floor[i] <- gams_where(x[i] >= target[i], active[i])
+
+  gams_problem(
+    model,
+    name = "dynamic_assignment_problem",
+    equations = floor,
+    objective = gams_sum(i, x[i], condition = active[i]),
+    sense = "min",
+    problem = "LP"
+  )
+}
+
 transport_problem <- function() {
   model <- gams_model("transport")
   i <- gams_set(

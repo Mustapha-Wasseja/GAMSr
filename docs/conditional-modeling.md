@@ -1,7 +1,7 @@
 # Conditional Modeling
 
-GAMSr supports GAMS dollar conditions in equation domains, indexed sums, and
-algebraic terms.
+GAMSr supports GAMS dollar conditions in equation domains, indexed sums,
+algebraic terms, and assignment targets.
 
 ```r
 m <- gams_model("conditional_model")
@@ -30,5 +30,32 @@ condition <- (active[i] > 0) & !gams_same_as(i, "b")
 term <- gams_where(active[i] * 2, condition)
 ```
 
-GAMS dollar conditions cannot contain decision variables. GAMSr validates this
-before compilation. Variable-attribute expressions are not supported yet.
+GAMS dollar conditions cannot contain decision variables directly. GAMSr
+validates this before compilation, while allowing symbolic variable attributes:
+
+```r
+x <- set_level(x, c(a = 1, b = 0, c = 1))
+selected <- gams_dynamic_set(m, "selected", domain = i)
+selected[i] <- gams_level(x[i]) > 0
+```
+
+The available attribute expressions are `gams_level()`, `gams_marginal()`,
+`gams_lower_bound()`, and `gams_upper_bound()`.
+
+Parameter and dynamic-set assignments are emitted in registration order.
+Indexed replacement syntax registers an unconditional assignment:
+
+```r
+selected[i] <- active[i] > 0
+active[i] <- active[i] * 2
+```
+
+Use `gams_assign()` when the assignment target itself has a dollar condition.
+Values outside the condition retain their previous values:
+
+```r
+gams_assign(active[i], active[i] * 2, condition = selected[i])
+```
+
+Dynamic sets are declared in generated GAMS source and excluded from input GDX
+data because their membership is computed by these assignments.

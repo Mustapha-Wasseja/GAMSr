@@ -29,6 +29,7 @@ GamsModel <- R6::R6Class(
       self$diagnostics <- list()
       private$symbol_registry <- new_name_registry("symbol")
       private$generated_registry <- new_name_registry("generated name")
+      private$assignment_list <- list()
     },
 
     add_symbol = function(symbol) {
@@ -61,6 +62,21 @@ GamsModel <- R6::R6Class(
       private$symbol_registry$values()
     },
 
+    add_assignment = function(assignment) {
+      if (!inherits(assignment, "gams_assignment")) {
+        gamsr_abort(
+          "`assignment` must be created by `gams_assign()`.",
+          class = "gamsr_error_invalid_assignment"
+        )
+      }
+      private$assignment_list[[length(private$assignment_list) + 1L]] <- assignment
+      invisible(assignment)
+    },
+
+    assignments = function() {
+      private$assignment_list
+    },
+
     validate = function() {
       invisible(self)
     },
@@ -72,7 +88,8 @@ GamsModel <- R6::R6Class(
   ),
   private = list(
     symbol_registry = NULL,
-    generated_registry = NULL
+    generated_registry = NULL,
+    assignment_list = NULL
   )
 )
 

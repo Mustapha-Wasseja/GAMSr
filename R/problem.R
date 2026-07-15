@@ -195,6 +195,7 @@ expr_symbols <- function(expression) {
       expr_symbols(expression$condition)
     ),
     "same_as" = same_as_symbols(expression),
+    "variable_attribute" = list(expression$reference$symbol),
     gamsr_abort(
       sprintf("Unsupported expression node type `%s`.", expression$type),
       class = "gamsr_error_invalid_expression"

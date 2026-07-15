@@ -5,7 +5,10 @@ test_that("symbolic indexing creates deterministic references", {
   x <- gams_variable(model, "x", domain = c(i, j), type = "positive")
 
   expect_identical(format_gams_expression(x[i, j]), "x(i,j)")
-  expect_identical(format_gams_expression(x["seattle", "new-york"]), "x(seattle,new-york)")
+  expect_identical(
+    format_gams_expression(x["seattle", "new-york"]),
+    "x('seattle','new-york')"
+  )
   expect_error(x[j, i], class = "gamsr_error_invalid_index")
   expect_error(x["missing", "new-york"], class = "gamsr_error_invalid_index")
 })

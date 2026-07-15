@@ -30,3 +30,11 @@
 - Added validation that rejects decision variables in dollar conditions and
   distinguishes strict logical comparisons from equation relationships.
 - Added an end-to-end GDX-backed conditional LP solve test.
+- Added dynamic subsets with `gams_dynamic_set()` and deterministic ordered
+  assignments for parameters and dynamic sets.
+- Added conditional assignment targets through `gams_assign()` and natural
+  indexed replacement syntax for unconditional assignments.
+- Added symbolic `.l`, `.m`, `.lo`, and `.up` variable-attribute expressions
+  for assignments and dollar conditions.
+- Added end-to-end GDX-backed tests that compute a dynamic subset, conditionally
+  assign parameter data, generate equations over that subset, and solve it.

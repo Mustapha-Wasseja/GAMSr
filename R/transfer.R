@@ -21,7 +21,10 @@ transfer_symbols <- function(problem) {
   structure(
     list(
       sets = lapply(
-        Filter(function(symbol) inherits(symbol, "gams_set"), symbols),
+        Filter(
+          function(symbol) inherits(symbol, "gams_set") && !isTRUE(symbol$dynamic),
+          symbols
+        ),
         canonical_transfer_set
       ),
       parameters = lapply(

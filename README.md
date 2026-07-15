@@ -20,6 +20,10 @@ This repository is in early active development. The package currently provides:
 - same-set aliases plus ordered-set helpers `gams_ord()` and `gams_card()`;
 - conditional equations and terms with `gams_where()`, filtered `gams_sum()`,
   logical operators, and `gams_same_as()`;
+- dynamic subsets with `gams_dynamic_set()` and ordered parameter/set
+  assignments with `gams_assign()` or indexed replacement syntax;
+- symbolic variable attributes (`gams_level()`, `gams_marginal()`, and bound
+  helpers) in assignments and dollar conditions;
 - deterministic expression formatting for compile-only inspection;
 - `gams_problem()`, `model_ir()`, and `generated_gams()` for compile-only
   GAMS source generation;
@@ -78,6 +82,11 @@ format_gams_expression(supply$definition$expression)
 # Filter an equation domain or a summation with parameter data.
 # supply[i] <- gams_where(gams_sum(j, x[i, j]) <= a[i], a[i] > 0)
 # gams_sum(i, a[i], condition = a[i] > 0)
+
+# Build a dynamic subset from initialized variable levels.
+# active <- gams_dynamic_set(m, "active", domain = i)
+# active[i] <- gams_level(x[i, "new-york"]) > 0
+# gams_assign(a[i], a[i] * 2, condition = active[i])
 
 problem <- gams_problem(
   m,

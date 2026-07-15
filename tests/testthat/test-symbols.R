@@ -61,6 +61,10 @@ test_that("variables support immutable attribute setters", {
   expect_identical(x$type, "positive")
   expect_null(x$gams_attributes$upper)
   expect_identical(x2$gams_attributes$upper$value, c(500, 700))
+  expect_identical(
+    model$get_symbol("x")$gams_attributes$upper$value,
+    c(500, 700)
+  )
 })
 
 test_that("equations store symbolic definitions", {

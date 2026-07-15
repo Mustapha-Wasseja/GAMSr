@@ -319,6 +319,25 @@ test_that("solve runs a conditionally generated LP with local GAMS", {
   expect_equal(as.character(floor$i), c("a", "c"))
 })
 
+test_that("solve runs dynamic and conditional assignments with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(
+    dynamic_assignment_problem(),
+    gams_options = list(limrow = 0, limcol = 0)
+  )
+  x <- variable_values(result, "x")
+  floor <- equation_values(result, "floor")
+
+  expect_identical(model_status(result)$label, "OptimalGlobal")
+  expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(objective_value(result), 8)
+  expect_equal(as.character(x$i), c("a", "c"))
+  expect_equal(x$level, c(2, 6))
+  expect_equal(as.character(floor$i), c("a", "c"))
+})
+
 test_that("solve reports infeasible LP status with local GAMS", {
   skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
   skip_if_not(gams_available(), "GAMS is not installed")

@@ -25,6 +25,19 @@ test_that("mock transfer adapter records intended GDX writes without writing GDX
   expect_identical(length(result$symbols$parameters), 3L)
 })
 
+test_that("dynamic sets stay out of input transfer data", {
+  symbols <- transfer_symbols(dynamic_assignment_problem())
+
+  expect_identical(
+    unname(vapply(symbols$sets, `[[`, "name", FUN.VALUE = "")),
+    "i"
+  )
+  expect_identical(
+    unname(vapply(symbols$parameters, `[[`, "name", FUN.VALUE = "")),
+    c("p", "target")
+  )
+})
+
 test_that("write_input_gdx protects existing files", {
   path <- file.path(withr::local_tempdir(), "input.gdx")
   writeLines("not a gdx", path)

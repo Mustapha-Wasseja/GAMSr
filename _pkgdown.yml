@@ -6,6 +6,7 @@ reference:
     contents:
       - gams_model
       - gams_set
+      - gams_dynamic_set
       - gams_alias
       - gams_parameter
       - gams_variable
@@ -21,6 +22,7 @@ reference:
       - gams_sum
       - gams_where
       - gams_same_as
+      - gams_assign
       - set_functions
       - gams_eq
       - gams_math
@@ -48,6 +50,7 @@ reference:
       - set_upper_bound
       - set_level
       - set_fixed
+      - variable_attribute_expressions
   - title: GAMS Discovery
     contents:
       - find_gams

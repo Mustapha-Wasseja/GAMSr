@@ -31,6 +31,7 @@ model_ir <- function(problem) {
       aliases = Filter(function(symbol) inherits(symbol, "gams_alias"), symbols),
       parameters = Filter(function(symbol) inherits(symbol, "gams_parameter"), symbols),
       variables = Filter(function(symbol) inherits(symbol, "gams_variable"), symbols),
+      assignments = problem$model$assignments(),
       equations = problem$equations,
       objective = problem$objective,
       objective_variable = objective_variable,
@@ -83,6 +84,8 @@ render_gams_ir <- function(ir, data_source = c("inline", "gdx"), input_file = NU
     render_parameters(ir$parameters, include_records = identical(data_source, "inline")),
     render_gdx_load(ir, input_file, enabled = identical(data_source, "gdx")),
     render_variables(ir$variables, ir$objective_variable),
+    render_variable_attributes(ir$variables),
+    render_assignments(ir$assignments),
     render_equation_declarations(ir$equations, ir$objective_equation),
     render_equation_definitions(ir),
     render_model_and_solve(ir)
@@ -128,6 +131,14 @@ render_sets <- function(sets, include_records = TRUE) {
 }
 
 render_set <- function(set, include_records = TRUE) {
+  if (isTRUE(set$dynamic)) {
+    return(sprintf(
+      "Set %s%s%s;",
+      set$name,
+      render_domain(set$domain),
+      render_description(set$description)
+    ))
+  }
   description <- render_description(set$description)
   if (!isTRUE(include_records)) {
     return(sprintf("Set %s%s;", set$name, description))
@@ -194,7 +205,12 @@ render_gdx_load <- function(ir, input_file, enabled = FALSE) {
   }
 
   load_symbols <- c(
-    vapply(ir$sets, `[[`, "name", FUN.VALUE = character(1L)),
+    vapply(
+      Filter(function(set) !isTRUE(set$dynamic), ir$sets),
+      `[[`,
+      "name",
+      FUN.VALUE = character(1L)
+    ),
     vapply(ir$parameters, `[[`, "name", FUN.VALUE = character(1L))
   )
   if (length(load_symbols) == 0L) {
@@ -231,6 +247,73 @@ render_variable_group <- function(type, keyword, variables) {
   }
   declarations <- vapply(variables, render_symbol_with_domain, character(1L))
   sprintf("%s %s;", keyword, paste(declarations, collapse = ", "))
+}
+
+render_variable_attributes <- function(variables) {
+  unlist(lapply(variables, render_variable_attr_records), use.names = FALSE)
+}
+
+render_variable_attr_records <- function(variable) {
+  fields <- c(lower = "lo", upper = "up", level = "l", fixed = "fx")
+  unlist(lapply(names(fields), function(field) {
+    records <- variable$gams_attributes[[field]]
+    if (is.null(records) || nrow(records) == 0L) {
+      return(character())
+    }
+    render_attribute_record_lines(variable, fields[[field]], records)
+  }), use.names = FALSE)
+}
+
+render_attribute_record_lines <- function(variable, suffix, records) {
+  if (length(variable$domain) == 0L) {
+    return(sprintf(
+      "%s.%s = %s;",
+      variable$name,
+      suffix,
+      format_constant(records$value[[1L]])
+    ))
+  }
+
+  domain <- domain_names(variable$domain)
+  apply(records, 1L, function(row) {
+    indices <- paste(
+      vapply(unname(row[domain]), quote_gams_label_literal, character(1L)),
+      collapse = ","
+    )
+    sprintf(
+      "%s.%s(%s) = %s;",
+      variable$name,
+      suffix,
+      indices,
+      format_constant(as.numeric(row[["value"]]))
+    )
+  })
+}
+
+render_assignments <- function(assignments) {
+  if (length(assignments) == 0L) {
+    return(character())
+  }
+  vapply(assignments, render_assignment, character(1L), USE.NAMES = FALSE)
+}
+
+render_assignment <- function(assignment) {
+  target <- format_expr(assignment$target, 0L)
+  if (!is.null(assignment$condition)) {
+    target <- paste0(target, "$(", format_condition_expr(assignment$condition), ")")
+  }
+  sprintf("%s = %s;", target, render_assignment_value(assignment))
+}
+
+render_assignment_value <- function(assignment) {
+  if (!is.null(assignment$logical_membership)) {
+    return(if (isTRUE(assignment$logical_membership)) "yes" else "no")
+  }
+  value <- assignment$value
+  if (value$type %in% c("comparison", "logical_operation", "same_as")) {
+    return(format_condition_expr(value))
+  }
+  format_expr(value, 0L)
 }
 
 render_equation_declarations <- function(equations, objective_equation) {

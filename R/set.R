@@ -15,6 +15,7 @@ gams_set <- function(model, name, records = character(), description = NULL) {
     kind = "set",
     domain = NULL,
     records = normalize_set_records(records),
+    dynamic = FALSE,
     description = description
   )
 }

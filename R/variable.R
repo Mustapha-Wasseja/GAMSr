@@ -80,5 +80,6 @@ set_variable_attribute <- function(variable, field, records, call = rlang::calle
     variable$domain,
     call = call
   )
+  variable$model$update_symbol(variable)
   variable
 }
