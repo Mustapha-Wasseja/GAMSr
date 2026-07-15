@@ -40,7 +40,7 @@ validate_symbol_indices <- function(symbol, indices, call = rlang::caller_env())
 }
 
 validate_index_value <- function(index, model, domain = NULL, call = rlang::caller_env()) {
-  if (inherits(index, "gams_set")) {
+  if (is_gams_index_set(index)) {
     if (!identical(index$model, model)) {
       gamsr_abort(
         "Symbolic indices must belong to the same model as the symbol being indexed.",
@@ -48,7 +48,7 @@ validate_index_value <- function(index, model, domain = NULL, call = rlang::call
         call = call
       )
     }
-    if (!is.null(domain) && !identical(index, domain)) {
+    if (!is.null(domain) && !identical(base_gams_set(index), base_gams_set(domain))) {
       gamsr_abort(
         sprintf("Index `%s` does not match expected domain `%s`.", index$name, domain$name),
         class = "gamsr_error_invalid_index",
@@ -79,7 +79,7 @@ validate_index_value <- function(index, model, domain = NULL, call = rlang::call
 
 index_free_names <- function(indices) {
   vapply(
-    Filter(function(index) inherits(index, "gams_set"), indices),
+    Filter(is_gams_index_set, indices),
     function(index) index$name,
     character(1L),
     USE.NAMES = FALSE

@@ -185,6 +185,7 @@ expr_symbols <- function(expression) {
     "comparison" = c(expr_symbols(expression$lhs), expr_symbols(expression$rhs)),
     "sum" = expr_symbols(expression$expression),
     "math_function" = unlist(lapply(expression$arguments, expr_symbols), recursive = FALSE),
+    "set_function" = list(expression$set),
     gamsr_abort(
       sprintf("Unsupported expression node type `%s`.", expression$type),
       class = "gamsr_error_invalid_expression"

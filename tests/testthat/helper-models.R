@@ -56,6 +56,25 @@ infeasible_lp_problem <- function() {
   )
 }
 
+ordered_alias_problem <- function() {
+  model <- gams_model("ordered_alias")
+  i <- gams_set(model, "i", records = c("a", "b", "c"))
+  ip <- gams_alias(i, "ip")
+  x <- gams_variable(model, "x", domain = i, type = "positive")
+  floor <- gams_equation(model, "floor", domain = ip)
+
+  floor[ip] <- x[ip] >= gams_ord(ip) / gams_card(i)
+
+  gams_problem(
+    model,
+    name = "ordered_alias_problem",
+    equations = floor,
+    objective = gams_sum(ip, x[ip]),
+    sense = "min",
+    problem = "LP"
+  )
+}
+
 transport_problem <- function() {
   model <- gams_model("transport")
   i <- gams_set(

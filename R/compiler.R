@@ -28,6 +28,7 @@ model_ir <- function(problem) {
       sense = problem$sense,
       symbols = symbols,
       sets = Filter(function(symbol) inherits(symbol, "gams_set"), symbols),
+      aliases = Filter(function(symbol) inherits(symbol, "gams_alias"), symbols),
       parameters = Filter(function(symbol) inherits(symbol, "gams_parameter"), symbols),
       variables = Filter(function(symbol) inherits(symbol, "gams_variable"), symbols),
       equations = problem$equations,
@@ -78,6 +79,7 @@ render_gams_ir <- function(ir, data_source = c("inline", "gdx"), input_file = NU
   sections <- list(
     render_header(ir),
     render_sets(ir$sets, include_records = identical(data_source, "inline")),
+    render_aliases(ir$aliases),
     render_parameters(ir$parameters, include_records = identical(data_source, "inline")),
     render_gdx_load(ir, input_file, enabled = identical(data_source, "gdx")),
     render_variables(ir$variables, ir$objective_variable),
@@ -93,6 +95,19 @@ render_gams_ir <- function(ir, data_source = c("inline", "gdx"), input_file = NU
     collapse = "\n"
   )
   paste(section_text, collapse = "\n\n")
+}
+
+render_aliases <- function(aliases) {
+  if (length(aliases) == 0L) {
+    return(character())
+  }
+
+  vapply(
+    aliases,
+    function(alias) sprintf("Alias (%s, %s);", alias$base_set$name, alias$name),
+    character(1L),
+    USE.NAMES = FALSE
+  )
 }
 
 render_header <- function(ir) {

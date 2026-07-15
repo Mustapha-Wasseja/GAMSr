@@ -55,7 +55,7 @@ normalize_domain <- function(domain, model, call = rlang::caller_env()) {
 
   if (inherits(domain, "gams_symbol_vector")) {
     domain <- unclass(domain)
-  } else if (inherits(domain, "gams_symbol")) {
+  } else if (is_gams_index_set(domain)) {
     domain <- list(domain)
   } else if (!is.list(domain)) {
     gamsr_abort(
@@ -66,9 +66,9 @@ normalize_domain <- function(domain, model, call = rlang::caller_env()) {
   }
 
   for (item in domain) {
-    if (!inherits(item, "gams_set")) {
+    if (!is_gams_index_set(item)) {
       gamsr_abort(
-        "All domain entries must be GAMSr set objects.",
+        "All domain entries must be GAMSr set or alias objects.",
         class = "gamsr_error_invalid_domain",
         call = call
       )
@@ -83,6 +83,14 @@ normalize_domain <- function(domain, model, call = rlang::caller_env()) {
   }
 
   domain
+}
+
+is_gams_index_set <- function(x) {
+  inherits(x, "gams_set") || inherits(x, "gams_alias")
+}
+
+base_gams_set <- function(x) {
+  if (inherits(x, "gams_alias")) x$base_set else x
 }
 
 domain_names <- function(domain) {

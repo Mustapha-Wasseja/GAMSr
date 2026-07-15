@@ -22,6 +22,33 @@ test_that("arithmetic expressions preserve precedence", {
   expect_identical(format_gams_expression(x[i]^2), "x(i) ** 2")
 })
 
+test_that("scalar symbols and expressions compose in either operand order", {
+  model <- gams_model("scalar_arithmetic")
+  x <- gams_variable(model, "x")
+  y <- gams_variable(model, "y")
+
+  expect_identical(format_gams_expression((x + 1) + y), "x + 1 + y")
+  expect_identical(format_gams_expression(y + (x + 1)), "y + (x + 1)")
+  expect_identical(format_gams_expression(2 * y + x), "2 * y + x")
+})
+
+test_that("aliases and ordered-set functions format and bind indices", {
+  model <- gams_model("ordered_sets")
+  i <- gams_set(model, "i", records = c("a", "b", "c"))
+  ip <- gams_alias(i, "ip")
+  x <- gams_variable(model, "x", domain = i)
+
+  expression <- gams_sum(ip, x[ip] * gams_ord(ip)) / gams_card(i)
+
+  expect_identical(expression$free_indices, character())
+  expect_identical(
+    format_gams_expression(expression),
+    "sum(ip, x(ip) * ord(ip)) / card(i)"
+  )
+  expect_error(x + 1, class = "gamsr_error_unindexed_symbol")
+  expect_error(i + 1, class = "gamsr_error_invalid_expression")
+})
+
 test_that("comparisons and gams_eq create symbolic relationships", {
   model <- gams_model("transport")
   i <- gams_set(model, "i", records = "seattle")

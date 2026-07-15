@@ -21,3 +21,7 @@
 - Added solver option-file generation through `solver_options`.
 - Added solve-summary metadata, `solve_summary()`, and `result_files()`.
 - Added local GAMS integration tests for MIP and infeasible LP fixtures.
+- Fixed mixed scalar-symbol/expression arithmetic dispatch so expressions can
+  be composed naturally in either operand order.
+- Added `gams_alias()` plus `gams_ord()` and `gams_card()`, with a gated
+  end-to-end GAMS solve test using GDX-backed set data.

@@ -13,7 +13,7 @@ gams_sum <- function(index, expression) {
 normalize_sum_indices <- function(index, call = rlang::caller_env()) {
   if (inherits(index, "gams_symbol_vector")) {
     index <- unclass(index)
-  } else if (inherits(index, "gams_set")) {
+  } else if (is_gams_index_set(index)) {
     index <- list(index)
   } else {
     gamsr_abort(
@@ -32,9 +32,9 @@ normalize_sum_indices <- function(index, call = rlang::caller_env()) {
   }
 
   for (item in index) {
-    if (!inherits(item, "gams_set")) {
+    if (!is_gams_index_set(item)) {
       gamsr_abort(
-        "All summation indices must be GAMSr set objects.",
+        "All summation indices must be GAMSr set or alias objects.",
         class = "gamsr_error_invalid_domain",
         call = call
       )

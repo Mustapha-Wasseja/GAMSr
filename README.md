@@ -17,6 +17,7 @@ This repository is in early active development. The package currently provides:
 - immutable S3 symbol objects for sets, parameters, variables, and equations;
 - canonical records for basic set and parameter inputs;
 - symbolic indexing, arithmetic, equation relationships, and `gams_sum()`;
+- same-set aliases plus ordered-set helpers `gams_ord()` and `gams_card()`;
 - deterministic expression formatting for compile-only inspection;
 - `gams_problem()`, `model_ir()`, and `generated_gams()` for compile-only
   GAMS source generation;
