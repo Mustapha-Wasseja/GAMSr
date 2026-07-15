@@ -290,6 +290,19 @@ test_that("solve runs a binary MIP with local GAMS", {
   expect_equal(variable_values(result, "y")$level[[1L]], 1)
 })
 
+test_that("solve runs an alias and ordered-set LP with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(ordered_alias_problem(), gams_options = list(limrow = 0, limcol = 0))
+  x <- variable_values(result, "x")
+
+  expect_identical(model_status(result)$label, "OptimalGlobal")
+  expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(objective_value(result), 2)
+  expect_equal(x$level, c(1 / 3, 2 / 3, 1), tolerance = 1e-8)
+})
+
 test_that("solve reports infeasible LP status with local GAMS", {
   skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
   skip_if_not(gams_available(), "GAMS is not installed")

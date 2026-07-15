@@ -1,6 +1,6 @@
 # Supported Features
 
-Last updated: 2026-07-14.
+Last updated: 2026-07-15.
 
 ## Implemented
 
@@ -18,8 +18,11 @@ Last updated: 2026-07-14.
 - `gams_equation()` declaration.
 - Symbolic indexing with `[]` for sets and literal labels.
 - Symbolic arithmetic with `+`, `-`, `*`, `/`, `^`, and unary minus.
+- Mixed scalar symbols and expression trees in either operand order.
 - Symbolic relationships with `<=`, `>=`, `==`, and `gams_eq()`.
 - `gams_sum()` over one or more sets.
+- `gams_alias()` for using multiple index names over the same base set.
+- Ordered-set helpers `gams_ord()` and `gams_card()`.
 - Symbolic math helpers: `gams_abs()`, `gams_exp()`, `gams_log()`,
   `gams_log10()`, `gams_sqrt()`, `gams_min()`, and `gams_max()`.
 - Equation definition assignment with free-index validation.
@@ -62,6 +65,5 @@ Last updated: 2026-07-14.
 - Listing/log parsing and solver-specific detail extraction beyond the current
   GAMS model attributes.
 - Stable unbounded-model classification tests across solvers.
-- Broader modeling syntax: aliases, conditions, ord/card, lead/lag, and more
-  intrinsic functions.
+- Broader modeling syntax: conditions, lead/lag, and more intrinsic functions.
 - Remote execution through GAMS Engine or other hosted solve backends.

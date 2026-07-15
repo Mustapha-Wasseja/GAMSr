@@ -19,6 +19,14 @@ as_gams_expr <- function(x, call = rlang::caller_env()) {
   }
 
   if (inherits(x, "gams_symbol")) {
+    if (is_gams_index_set(x)) {
+      gamsr_abort(
+        sprintf("Set `%s` cannot be used as a numeric expression.", x$name),
+        i = "Use `gams_ord()` or `gams_card()` when a numeric set value is required.",
+        class = "gamsr_error_invalid_expression",
+        call = call
+      )
+    }
     if (length(x$domain) > 0L) {
       gamsr_abort(
         sprintf("Symbol `%s` is indexed and must be referenced with `[]`.", x$name),
@@ -110,6 +118,15 @@ new_math_function <- function(function_name, arguments) {
   )
 }
 
+new_set_function <- function(function_name, set, free_indices = character()) {
+  new_gams_expr(
+    "set_function",
+    function_name = function_name,
+    set = set,
+    free_indices = free_indices
+  )
+}
+
 #' Create a symbolic equality relation
 #'
 #' `gams_eq()` creates a symbolic equality relation for equation definitions.
@@ -141,8 +158,7 @@ print.gams_expr <- function(x, ...) {
   invisible(x)
 }
 
-#' @export
-Ops.gams_expr <- function(e1, e2) {
+gams_ops <- function(e1, e2) {
   if (missing(e2)) {
     switch(
       .Generic,
@@ -159,21 +175,10 @@ Ops.gams_expr <- function(e1, e2) {
 }
 
 #' @export
-Ops.gams_symbol <- function(e1, e2) {
-  if (missing(e2)) {
-    switch(
-      .Generic,
-      "+" = as_gams_expr(e1),
-      "-" = new_unary_operation("-", e1),
-      gamsr_abort(
-        sprintf("Unary operator `%s` is not supported for GAMSr symbols.", .Generic),
-        class = "gamsr_error_unsupported_operator"
-      )
-    )
-  } else {
-    gams_binary_or_comparison(.Generic, e1, e2)
-  }
-}
+Ops.gams_expr <- gams_ops
+
+#' @export
+Ops.gams_symbol <- gams_ops
 
 gams_binary_or_comparison <- function(operator, lhs, rhs) {
   switch(
@@ -224,6 +229,7 @@ format_expr <- function(expression, parent_precedence = 0L) {
     "comparison" = format_comparison(expression),
     "sum" = format_sum_expression(expression),
     "math_function" = format_math_expression(expression),
+    "set_function" = paste0(expression$function_name, "(", expression$set$name, ")"),
     gamsr_abort(
       sprintf("Unsupported expression node type `%s`.", expression$type),
       class = "gamsr_error_invalid_expression"
@@ -257,7 +263,7 @@ format_indexed_reference <- function(expression) {
 }
 
 format_index <- function(index) {
-  if (inherits(index, "gams_set")) {
+  if (is_gams_index_set(index)) {
     return(index$name)
   }
 

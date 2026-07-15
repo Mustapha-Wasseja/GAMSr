@@ -62,7 +62,7 @@ normalize_equation_indices <- function(equation, indices, call = rlang::caller_e
   for (i in seq_along(indices)) {
     index <- indices[[i]]
     domain <- equation$domain[[i]]
-    if (!inherits(index, "gams_set") || !identical(index, domain)) {
+    if (!is_gams_index_set(index) || !identical(index, domain)) {
       gamsr_abort(
         sprintf(
           "Equation `%s` index %d must be the domain set `%s`.",
