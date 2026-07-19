@@ -22,7 +22,8 @@ test_that("arithmetic expressions preserve precedence", {
   expect_identical(format_gams_expression(x[i] + 2 * a[i]), "x(i) + 2 * a(i)")
   expect_identical(format_gams_expression((x[i] + a[i]) * 2), "(x(i) + a(i)) * 2")
   expect_identical(format_gams_expression(-x[i]), "-x(i)")
-  expect_identical(format_gams_expression(x[i]^2), "x(i) ** 2")
+  expect_identical(format_gams_expression(x[i]^2), "power(x(i), 2)")
+  expect_identical(format_gams_expression(x[i]^0.5), "x(i) ** 0.5")
 })
 
 test_that("scalar symbols and expressions compose in either operand order", {

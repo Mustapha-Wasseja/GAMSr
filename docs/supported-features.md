@@ -1,6 +1,6 @@
 # Supported Features
 
-Last updated: 2026-07-15.
+Last updated: 2026-07-19.
 
 ## Implemented
 
@@ -20,6 +20,8 @@ Last updated: 2026-07-15.
 - `gams_equation()` declaration.
 - Symbolic indexing with `[]` for sets and literal labels.
 - Symbolic arithmetic with `+`, `-`, `*`, `/`, `^`, and unary minus.
+- Domain-safe integer powers rendered with GAMS `power()` and real powers
+  rendered with `**`.
 - Mixed scalar symbols and expression trees in either operand order.
 - Symbolic relationships with `<=`, `>=`, `==`, and `gams_eq()`.
 - Logical comparisons with `<`, `<=`, `==`, `!=`, `>=`, and `>` inside
@@ -40,6 +42,10 @@ Last updated: 2026-07-15.
 - Equation definition assignment with free-index validation.
 - `format_gams_expression()` for deterministic expression inspection.
 - `gams_problem()` for binding equations, objective, sense, and model type.
+- Early model-class validation for discrete-variable compatibility and
+  polynomial degree in LP/MIP and QCP/MIQCP families.
+- Problem-type support includes LP, MIP, RMIP, NLP, DNLP, QCP, MIQCP, RMIQCP,
+  MINLP, and RMINLP source generation.
 - `model_ir()` for normalized compiler inspection.
 - `generated_gams()` for deterministic compile-only `.gms` source.
 - `write_gams()` for writing generated source to a chosen file.
@@ -69,14 +75,18 @@ Last updated: 2026-07-15.
 - GAMS executable discovery helpers, including common Windows install
   locations.
 - Gated end-to-end solve tests against a local GAMS installation for LP, MIP,
-  and infeasible LP fixtures.
+  NLP, QCP, MINLP, infeasible LP, and unbounded LP fixtures.
+- Unbounded-model status tests against CPLEX, HiGHS, and SoPlex.
+- Opt-in licensed solve coverage for a 2,100-row LP beyond the demo-size
+  ceiling.
 
 ## Not Yet Implemented
 
-- Broad full-model GAMS syntax validation across problem classes.
+- Full semantic classification beyond the current polynomial-degree checks,
+  including nonsmooth and solver-specific capability validation.
 - Listing/log parsing and solver-specific detail extraction beyond the current
   GAMS model attributes.
-- Stable unbounded-model classification tests across solvers.
+- End-to-end fixtures for DNLP, MIQCP, RMIQCP, RMIP, and RMINLP.
 - Broader modeling syntax: lead/lag, advanced set operations and domain
   forwarding, and more intrinsic functions.
 - Remote execution through GAMS Engine or other hosted solve backends.

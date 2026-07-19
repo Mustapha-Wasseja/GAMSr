@@ -22,8 +22,9 @@ gams_problem(
 
 \item{sense}{Optimisation direction, either \code{"min"} or \code{"max"}.}
 
-\item{problem}{GAMS model type. The initial compiler supports deterministic
-source generation for common optimisation types.}
+\item{problem}{GAMS model type. GAMSr validates discrete-variable
+compatibility and rejects expressions whose polynomial degree exceeds the
+selected linear or quadratic model class.}
 
 \item{name}{Optional problem name. Defaults to the model name.}
 }

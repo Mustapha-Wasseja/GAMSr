@@ -56,6 +56,100 @@ infeasible_lp_problem <- function() {
   )
 }
 
+unbounded_lp_problem <- function() {
+  model <- gams_model("unbounded_lp")
+  x <- gams_variable(model, "x")
+  floor <- gams_equation(model, "floor")
+  floor[] <- x >= 0
+
+  gams_problem(
+    model,
+    name = "unbounded_lp_problem",
+    equations = floor,
+    objective = x,
+    sense = "max",
+    problem = "LP"
+  )
+}
+
+nonlinear_nlp_problem <- function() {
+  model <- gams_model("nonlinear_nlp")
+  x <- gams_variable(model, "x", type = "positive")
+  x <- set_level(x, 1)
+  feasible <- gams_equation(model, "feasible")
+  feasible[] <- x^2 >= 4
+
+  gams_problem(
+    model,
+    name = "nonlinear_nlp_problem",
+    equations = feasible,
+    objective = (x - 3)^2,
+    sense = "min",
+    problem = "NLP"
+  )
+}
+
+quadratic_qcp_problem <- function() {
+  model <- gams_model("quadratic_qcp")
+  x <- gams_variable(model, "x", type = "positive")
+  bound <- gams_equation(model, "bound")
+  bound[] <- x^2 <= 4
+
+  gams_problem(
+    model,
+    name = "quadratic_qcp_problem",
+    equations = bound,
+    objective = x,
+    sense = "max",
+    problem = "QCP"
+  )
+}
+
+mixed_integer_nlp_problem <- function() {
+  model <- gams_model("mixed_integer_nlp")
+  x <- gams_variable(model, "x", type = "positive")
+  y <- gams_variable(model, "y", type = "binary")
+  x <- set_level(x, 2)
+  y <- set_level(y, 1)
+  link <- gams_equation(model, "link")
+  curved <- gams_equation(model, "curved")
+  link[] <- x <= 4 * y
+  curved[] <- x^2 <= 9 * y
+
+  gams_problem(
+    model,
+    name = "mixed_integer_nlp_problem",
+    equations = c(link, curved),
+    objective = (x - 2)^2 + (1 - y),
+    sense = "min",
+    problem = "MINLP"
+  )
+}
+
+large_licensed_lp_problem <- function(size = 2100L) {
+  model <- gams_model("large_licensed_lp")
+  labels <- sprintf("i%04d", seq_len(size))
+  i <- gams_set(model, "i", records = labels)
+  p <- gams_parameter(
+    model,
+    "p",
+    domain = i,
+    records = stats::setNames(rep(1, size), labels)
+  )
+  x <- gams_variable(model, "x", domain = i, type = "positive")
+  floor <- gams_equation(model, "floor", domain = i)
+  floor[i] <- x[i] >= p[i]
+
+  gams_problem(
+    model,
+    name = "large_licensed_lp_problem",
+    equations = floor,
+    objective = gams_sum(i, x[i]),
+    sense = "min",
+    problem = "LP"
+  )
+}
+
 ordered_alias_problem <- function() {
   model <- gams_model("ordered_alias")
   i <- gams_set(model, "i", records = c("a", "b", "c"))

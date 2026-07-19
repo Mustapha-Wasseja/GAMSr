@@ -10,7 +10,9 @@ gams_version(system_directory = NULL)
 \item{system_directory}{Optional GAMS system directory.}
 }
 \value{
-Version output from GAMS, or \code{NA_character_} when unavailable.
+A version number such as \code{"54.2.0"}, or \code{NA_character_} when the
+executable is unavailable or its output cannot be parsed. License metadata
+is never returned.
 }
 \description{
 Query the GAMS version

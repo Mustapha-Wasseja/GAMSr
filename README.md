@@ -31,6 +31,8 @@ This repository is in early active development. The package currently provides:
 - a starter transfer adapter layer for canonical input data and optional GDX
   writing through GAMS Transfer R;
 - safe local `solve()` execution with result-GDX reading when GAMS is installed;
+- early model-class checks for discrete variables and linear, quadratic, or
+  nonlinear expression degree;
 - optional solver selection and scalar GAMS command-line options in `solve()`;
 - GDX-backed solve execution that writes input data to `input.gdx` instead of
   rendering records inline;
@@ -42,6 +44,10 @@ This repository is in early active development. The package currently provides:
 
 It includes gated local GAMS integration tests, but broad solver and model-class
 coverage is still under development.
+
+Local integration coverage includes LP, MIP, NLP, QCP, and MINLP solves,
+infeasible and unbounded status handling, and an opt-in 2,100-row licensed LP
+test beyond the GAMS demo-size ceiling.
 
 ## Example
 

@@ -10,6 +10,18 @@ test_that("gams_version probes local GAMS with the console help command", {
   version <- gams_version()
 
   expect_type(version, "character")
-  expect_match(version, "GAMS", fixed = TRUE)
-  expect_match(version, "Release", fixed = TRUE)
+  expect_match(version, "^[0-9]+\\.[0-9]+\\.[0-9]+$")
+  expect_no_match(version, "License", fixed = TRUE)
+})
+
+test_that("version parsing never returns license metadata", {
+  output <- paste(
+    "*** GAMS Release     : 54.2.0 build platform",
+    "*** License          : C:/private/gamslice.txt",
+    "*** Person Name and private-license-data",
+    sep = "\n"
+  )
+
+  expect_identical(GAMSr:::parse_gams_version(output), "54.2.0")
+  expect_true(is.na(GAMSr:::parse_gams_version("unrecognized output")))
 })

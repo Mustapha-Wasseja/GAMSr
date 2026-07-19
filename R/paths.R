@@ -38,7 +38,9 @@ gams_available <- function(system_directory = NULL) {
 #'
 #' @inheritParams find_gams
 #'
-#' @return Version output from GAMS, or `NA_character_` when unavailable.
+#' @return A version number such as `"54.2.0"`, or `NA_character_` when the
+#'   executable is unavailable or its output cannot be parsed. License metadata
+#'   is never returned.
 #' @export
 gams_version <- function(system_directory = NULL) {
   exe <- find_gams(system_directory)
@@ -54,7 +56,17 @@ gams_version <- function(system_directory = NULL) {
     return(process)
   }
 
-  paste(c(process$stdout, process$stderr), collapse = "\n")
+  parse_gams_version(paste(c(process$stdout, process$stderr), collapse = "\n"))
+}
+
+parse_gams_version <- function(output) {
+  pattern <- "GAMS Release[[:space:]]*:[[:space:]]*([0-9]+(?:\\.[0-9]+){1,2})"
+  match <- regexec(pattern, output, perl = TRUE, ignore.case = TRUE)
+  parts <- regmatches(output, match)[[1L]]
+  if (length(parts) < 2L) {
+    return(NA_character_)
+  }
+  parts[[2L]]
 }
 
 gams_executable_name <- function() {

@@ -445,9 +445,23 @@ format_index <- function(index) {
 }
 
 format_binary_operation <- function(expression) {
+  if (identical(expression$operator, "**") && is_integer_power(expression$rhs)) {
+    return(paste0(
+      "power(",
+      format_expr(expression$lhs, 0L),
+      ", ",
+      format_expr(expression$rhs, 0L),
+      ")"
+    ))
+  }
   left <- format_expr(expression$lhs, expr_precedence(expression))
   right <- format_expr(expression$rhs, expr_precedence(expression) + 1L)
   paste(left, expression$operator, right)
+}
+
+is_integer_power <- function(expression) {
+  identical(expression$type, "constant") &&
+    isTRUE(expression$value == trunc(expression$value))
 }
 
 format_comparison <- function(expression) {

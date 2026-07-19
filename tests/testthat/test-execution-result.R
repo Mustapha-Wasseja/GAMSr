@@ -349,6 +349,85 @@ test_that("solve reports infeasible LP status with local GAMS", {
   expect_equal(solve_summary(result)$value[solve_summary(result)$metric == "model_status"], 19)
 })
 
+test_that("solve runs nonlinear and quadratic model classes with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  nlp <- solve(
+    nonlinear_nlp_problem(),
+    gams_options = list(limrow = 0, limcol = 0)
+  )
+  qcp <- solve(
+    quadratic_qcp_problem(),
+    solver = "cplex",
+    gams_options = list(limrow = 0, limcol = 0)
+  )
+
+  expect_true(model_status(nlp)$label %in% c("OptimalGlobal", "OptimalLocal"))
+  expect_identical(solver_status(nlp)$label, "Normal")
+  expect_equal(objective_value(nlp), 0, tolerance = 1e-8)
+  expect_equal(variable_values(nlp, "x")$level[[1L]], 3, tolerance = 1e-6)
+  expect_identical(model_status(qcp)$label, "OptimalGlobal")
+  expect_identical(solver_status(qcp)$label, "Normal")
+  expect_equal(objective_value(qcp), 2, tolerance = 1e-7)
+})
+
+test_that("solve runs a mixed-integer nonlinear model with local GAMS", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(
+    mixed_integer_nlp_problem(),
+    solver = "sbb",
+    gams_options = list(limrow = 0, limcol = 0)
+  )
+
+  expect_true(model_status(result)$label %in% c("OptimalGlobal", "OptimalLocal"))
+  expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(objective_value(result), 0, tolerance = 1e-7)
+  expect_equal(variable_values(result, "x")$level[[1L]], 2, tolerance = 1e-5)
+  expect_equal(variable_values(result, "y")$level[[1L]], 1)
+})
+
+test_that("unbounded status is stable across local LP solvers", {
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  solvers <- c("cplex", "highs", "soplex")
+  for (solver in solvers) {
+    solver_options <- if (identical(solver, "cplex")) list(preind = 0) else NULL
+    result <- solve(
+      unbounded_lp_problem(),
+      solver = solver,
+      solver_options = solver_options,
+      gams_options = list(limrow = 0, limcol = 0)
+    )
+
+    expect_true(model_status(result)$label %in% c("Unbounded", "UnboundedNoSolution"))
+    expect_identical(solver_status(result)$label, "Normal")
+  }
+})
+
+test_that("licensed GAMS solves a model beyond the demo limit", {
+  skip_if_not(
+    identical(tolower(Sys.getenv("GAMSR_RUN_LICENSED_TESTS")), "true"),
+    "licensed integration tests are disabled"
+  )
+  skip_if_not(gams_transfer_available(), "gamstransfer is not installed")
+  skip_if_not(gams_available(), "GAMS is not installed")
+
+  result <- solve(
+    large_licensed_lp_problem(),
+    solver = "highs",
+    gams_options = list(limrow = 0, limcol = 0)
+  )
+
+  expect_identical(model_status(result)$label, "OptimalGlobal")
+  expect_identical(solver_status(result)$label, "Normal")
+  expect_equal(objective_value(result), 2100)
+  expect_equal(nrow(variable_values(result, "x")), 2100)
+})
+
 test_that("execution source appends result unload statements", {
   problem <- scalar_lp_problem()
   source <- GAMSr:::append_result_unload(generated_gams(problem), model_ir(problem), "results.gdx")

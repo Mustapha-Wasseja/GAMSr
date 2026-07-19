@@ -38,3 +38,14 @@
   for assignments and dollar conditions.
 - Added end-to-end GDX-backed tests that compute a dynamic subset, conditionally
   assign parameter data, generate equations over that subset, and solve it.
+- Rendered integer exponentiation with GAMS `power()` so negative intermediate
+  bases are valid, while retaining `**` for real-valued exponents.
+- Added early polynomial-degree validation for LP/MIP and QCP/MIQCP model
+  classes, plus discrete-variable compatibility checks and `RMIQCP` support.
+- Added local GAMS integration tests for NLP, QCP, MINLP, and unbounded LP
+  behavior across CPLEX, HiGHS, and SoPlex.
+- Added an opt-in licensed integration test with 2,100 rows and variables,
+  solved using HiGHS beyond the GAMS demo model-size ceiling.
+- Hardened `gams_version()` to return only the parsed semantic version and
+  never expose license paths, identity, or entitlement metadata from the GAMS
+  banner.
